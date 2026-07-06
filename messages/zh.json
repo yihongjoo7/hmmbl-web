@@ -1,0 +1,31 @@
+{
+  "common": {
+    "confirm": "确认",
+    "cancel": "取消",
+    "close": "关闭",
+    "back": "返回",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "loading": "加载中...",
+    "error": "发生错误。",
+    "retry": "重试",
+    "empty": "暂无数据。"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "退出",
+    "simpleAuth": "简便认证",
+    "biometric": "生物认证",
+    "pin": "PIN认证",
+    "pattern": "图案认证"
+  },
+  "main": { "title": "H.Point" },
+  "earn": { "title": "积分", "coupon": "优惠券", "mission": "任务", "quiz": "测验", "survey": "问卷", "roulette": "轮盘", "pointWork": "积分工作", "highlight": "精彩活动", "event": "活动" },
+  "use": { "title": "使用", "product": "商品", "gift": "礼品", "affiliateMap": "合作商户", "donation": "捐款", "subscription": "订阅优惠券", "culture": "文化" },
+  "pay": { "title": "支付", "brandPayment": "品牌支付", "charge": "充值", "transfer": "积分转换", "receipt": "电子收据", "directEarn": "直接积分", "card": "卡管理" },
+  "my": { "title": "我的", "history": "使用记录", "activity": "活动记录", "point": "积分", "badge": "徽章", "coupon": "我的优惠券", "wishlist": "收藏" },
+  "footer": { "guide": "使用指南", "cs": "客服中心", "notice": "公告", "terms": "条款政策", "appVersion": "应用版本" },
+  "settings": { "title": "设置", "profile": "个人信息", "security": "安全设置", "notification": "通知设置", "account": "账号管理" },
+  "member": { "list": { "title": "成员列表", "placeholder": "调用后端并在页面显示结果。登录与未登录用户均可使用。", "serverCall": "服务器调用" }, "hub": { "listTitle": "成员列表", "listDesc": "查看所有成员" }, "detail": { "title": "成员详情" }, "new": { "title": "新增成员", "placeholder": "成员创建表单即将上线" } }
+}

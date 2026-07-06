@@ -1,0 +1,2 @@
+export interface SubscriptionCoupon { id: string; title: string; brand: string; discountRate: number; monthlyFee: number; isSubscribed: boolean; }
+export const SubscriptionErrorCode = { ALREADY_SUBSCRIBED: 'ALREADY_SUBSCRIBED', INSUFFICIENT_POINT: 'SUBSCRIPTION_INSUFFICIENT_POINT' } as const;

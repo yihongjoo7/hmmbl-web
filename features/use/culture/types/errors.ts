@@ -1,0 +1,1 @@
+export const CultureErrorCode = { NOT_FOUND: 'CULTURE_NOT_FOUND', PURCHASE_FAIL: 'CULTURE_PURCHASE_FAIL' } as const;

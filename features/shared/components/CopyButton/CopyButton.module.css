@@ -1,0 +1,53 @@
+/**
+ * features/shared/components/CopyButton/CopyButton.module.css
+ *
+ * CopyButton 컴포넌트 스타일
+ *
+ * .button   — 기본 버튼 스타일
+ * .copied   — 복사 완료 상태 (2초 동안 유지)
+ * .icon     — 아이콘 영역 (⎘ / ✓ 전환)
+ */
+
+/* 기본 버튼 */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.button:active {
+  background: #f3f4f6;
+}
+
+/* 복사 완료 상태 */
+.copied {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.copied:hover {
+  background: #d1fae5;
+  border-color: #34d399;
+}
+
+/* 아이콘 영역 */
+.icon {
+  font-size: 14px;
+  line-height: 1;
+}

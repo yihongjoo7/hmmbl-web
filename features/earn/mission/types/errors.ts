@@ -1,0 +1,1 @@
+export const MissionErrorCode = { NOT_FOUND: 'MISSION_NOT_FOUND', ALREADY_COMPLETED: 'MISSION_ALREADY_COMPLETED' } as const;

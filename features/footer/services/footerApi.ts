@@ -1,0 +1,3 @@
+import { apiClient } from '@/lib/api/apiClient';
+export const footerApi = { guide: () => apiClient.get('/footer/guide'), faq: () => apiClient.get('/footer/faq'), notices: () => apiClient.get('/footer/notices'), noticeDetail: (id: string) => apiClient.get(`/footer/notices/${id}`), terms: () => apiClient.get('/footer/terms'), inquiry: (data: unknown) => apiClient.post('/footer/inquiry', data) };
+export const footerQueryKeys = { guide: () => ['footer', 'guide'] as const, faq: () => ['footer', 'faq'] as const, notices: () => ['footer', 'notice'] as const, noticeDetail: (id: string) => ['footer', 'notice', id] as const, terms: () => ['footer', 'terms'] as const };

@@ -1,0 +1,3 @@
+import { apiClient } from '@/lib/api/apiClient';
+export const pointWorkApi = { dashboard: () => apiClient.get('/earn/point-work/dashboard'), challenges: () => apiClient.get('/earn/challenges'), challengeDetail: (id: string) => apiClient.get(`/earn/challenges/${id}`), joinChallenge: (id: string) => apiClient.post(`/earn/challenges/${id}/join`), healthContent: () => apiClient.get('/earn/point-work/health-content') };
+export const pointWorkQueryKeys = { dashboard: () => ['earn', 'point-work', 'dashboard'] as const, challenges: () => ['earn', 'challenge', 'list'] as const, challengeDetail: (id: string) => ['earn', 'challenge', id] as const };

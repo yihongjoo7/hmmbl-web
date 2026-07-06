@@ -1,0 +1,1 @@
+export const pointWorkQueryKeys = { dashboard: () => ['earn', 'point-work', 'dashboard'] as const, challenges: () => ['earn', 'challenge', 'list'] as const, challengeDetail: (id: string) => ['earn', 'challenge', id] as const };

@@ -1,0 +1,6 @@
+export const MainErrorCode = {
+  BANNER_LOAD_FAIL:    'BANNER_LOAD_FAIL',
+  NOTIFICATION_FAIL:   'NOTIFICATION_FAIL',
+  CHATBOT_FAIL:        'CHATBOT_FAIL',
+  SEARCH_FAIL:         'SEARCH_FAIL',
+} as const;

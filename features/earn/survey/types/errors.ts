@@ -1,0 +1,1 @@
+export const SurveyErrorCode = { NOT_FOUND: 'SURVEY_NOT_FOUND', ALREADY_COMPLETED: 'SURVEY_ALREADY_COMPLETED' } as const;

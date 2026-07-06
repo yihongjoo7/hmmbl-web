@@ -1,0 +1,1 @@
+export const CouponErrorCode = { NOT_FOUND: 'COUPON_NOT_FOUND', EXPIRED: 'COUPON_EXPIRED', ALREADY_USED: 'COUPON_ALREADY_USED' } as const;

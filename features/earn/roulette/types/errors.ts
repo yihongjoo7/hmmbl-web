@@ -1,0 +1,1 @@
+export const RouletteErrorCode = { ALREADY_PLAYED: 'ROULETTE_ALREADY_PLAYED', LIMIT_REACHED: 'ROULETTE_LIMIT_REACHED' } as const;

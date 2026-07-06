@@ -1,0 +1,3 @@
+import { apiClient } from '@/lib/api/apiClient';
+export const chargeApi = { instant: (amount: number) => apiClient.post('/pay/charge/instant', { amount }), auto: () => apiClient.get('/pay/charge/auto'), updateAuto: (s: unknown) => apiClient.post('/pay/charge/auto', s), scheduled: () => apiClient.get('/pay/charge/scheduled'), createScheduled: (s: unknown) => apiClient.post('/pay/charge/scheduled', s), cancelScheduled: () => apiClient.post('/pay/charge/scheduled/cancel') };
+export const chargeQueryKeys = { auto: () => ['pay', 'charge', 'auto'] as const, scheduled: () => ['pay', 'charge', 'scheduled'] as const };

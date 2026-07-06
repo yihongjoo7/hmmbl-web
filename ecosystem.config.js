@@ -1,0 +1,45 @@
+module.exports = {
+  apps: [
+    {
+      name: 'hpoint-mobile',
+      script: 'node_modules/next/dist/bin/next',
+      args: 'start',
+      cwd: './',
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
+        NEXT_PUBLIC_APP_ENV: 'prod',
+        PORT: 3001,
+      },
+      env_staging: {
+        NODE_ENV: 'production',
+        NEXT_PUBLIC_APP_ENV: 'staging',
+        PORT: 3001,
+      },
+      output: './logs/out.log',
+      error: './logs/error.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      merge_logs: true,
+    },
+    {
+      name: 'hpoint-mobile-dev',
+      script: 'node_modules/next/dist/bin/next',
+      args: 'dev --experimental-https --experimental-https-key ./keyfile/local-key.pem --experimental-https-cert ./keyfile/local-cert.pem --port 3001 --hostname 0.0.0.0',
+      cwd: './',
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      env: {
+        NODE_ENV: 'development',
+        NEXT_PUBLIC_APP_ENV: 'dev',
+        PORT: 3001,
+      },
+      output: './logs/dev-out.log',
+      error: './logs/dev-error.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      merge_logs: true,
+    },
+  ],
+};

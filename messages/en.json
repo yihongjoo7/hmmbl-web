@@ -1,0 +1,31 @@
+{
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "An error occurred.",
+    "retry": "Retry",
+    "empty": "No data available."
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "simpleAuth": "Simple Auth",
+    "biometric": "Biometric",
+    "pin": "PIN",
+    "pattern": "Pattern"
+  },
+  "main": { "title": "H.Point" },
+  "earn": { "title": "Earn", "coupon": "Coupon", "mission": "Mission", "quiz": "Quiz", "survey": "Survey", "roulette": "Roulette", "pointWork": "Point Work", "highlight": "Highlight", "event": "Event" },
+  "use": { "title": "Use", "product": "Product", "gift": "Gift", "affiliateMap": "Affiliate Map", "donation": "Donation", "subscription": "Subscription", "culture": "Culture" },
+  "pay": { "title": "Pay", "brandPayment": "Brand Payment", "charge": "Charge", "transfer": "Transfer", "receipt": "Receipt", "directEarn": "Direct Earn", "card": "Card" },
+  "my": { "title": "My", "history": "History", "activity": "Activity", "point": "Points", "badge": "Badges", "coupon": "My Coupon", "wishlist": "Wishlist" },
+  "footer": { "guide": "Guide", "cs": "Customer Service", "notice": "Notice", "terms": "Terms", "appVersion": "App Version" },
+  "settings": { "title": "Settings", "profile": "Profile", "security": "Security", "notification": "Notifications", "account": "Account" },
+  "member": { "list": { "title": "Member List", "placeholder": "Calls the backend and displays the result. Available to both logged-in and guest users.", "serverCall": "Server Call" }, "hub": { "listTitle": "Member List", "listDesc": "View all members" }, "detail": { "title": "Member Detail" }, "new": { "title": "New Member", "placeholder": "Member creation form coming soon" } }
+}

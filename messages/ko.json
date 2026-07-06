@@ -1,0 +1,96 @@
+{
+  "common": {
+    "confirm": "확인",
+    "cancel": "취소",
+    "close": "닫기",
+    "back": "뒤로",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다.",
+    "retry": "다시 시도",
+    "empty": "데이터가 없습니다."
+  },
+  "auth": {
+    "login": "로그인",
+    "logout": "로그아웃",
+    "simpleAuth": "간편인증",
+    "biometric": "생체인증",
+    "pin": "PIN 인증",
+    "pattern": "패턴 인증"
+  },
+  "main": {
+    "title": "H.Point"
+  },
+  "earn": {
+    "title": "적립",
+    "coupon": "쿠폰·플포",
+    "mission": "미션",
+    "quiz": "퀴즈",
+    "survey": "설문",
+    "roulette": "룰렛",
+    "pointWork": "포인트워크",
+    "highlight": "하이라이트",
+    "event": "이벤트"
+  },
+  "use": {
+    "title": "사용",
+    "product": "상품",
+    "gift": "선물하기",
+    "affiliateMap": "제휴처 안내",
+    "donation": "기부",
+    "subscription": "구독쿠폰딜",
+    "culture": "컬처"
+  },
+  "pay": {
+    "title": "결제",
+    "brandPayment": "브랜드결제",
+    "charge": "포인트 충전",
+    "transfer": "포인트 전환",
+    "receipt": "전자영수증",
+    "directEarn": "직접 적립",
+    "card": "카드 관리"
+  },
+  "my": {
+    "title": "마이",
+    "history": "이용내역",
+    "activity": "활동내역",
+    "point": "포인트",
+    "badge": "배지함",
+    "coupon": "MY 쿠폰",
+    "wishlist": "찜 목록"
+  },
+  "footer": {
+    "guide": "이용안내",
+    "cs": "고객센터",
+    "notice": "공지사항",
+    "terms": "약관 및 정책",
+    "appVersion": "앱 버전 정보"
+  },
+  "settings": {
+    "title": "설정",
+    "profile": "개인정보변경",
+    "security": "보안 설정",
+    "notification": "알림 설정",
+    "account": "계정 관리"
+  },
+  "member": {
+    "list": {
+      "title": "멤버 목록",
+      "placeholder": "백엔드를 호출하고 결과를 화면에 표시. 로그인, 비로그인 모두 사용가능",
+      "serverCall": "서버 호출"
+    },
+    "hub": {
+      "listTitle": "멤버 리스트",
+      "listDesc": "전체 멤버 목록 조회"
+    },
+    "detail": {
+      "title": "멤버 상세"
+    },
+    "new": {
+      "title": "멤버 생성",
+      "placeholder": "멤버 생성 폼 구현 예정"
+    }
+  }
+}

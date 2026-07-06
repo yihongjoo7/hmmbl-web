@@ -1,0 +1,1 @@
+export const BrandPaymentErrorCode = { BARCODE_ISSUE_FAIL: 'BARCODE_ISSUE_FAIL', TERMS_NOT_AGREED: 'BRAND_PAYMENT_TERMS_NOT_AGREED' } as const;

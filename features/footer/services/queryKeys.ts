@@ -1,0 +1,1 @@
+export const footerQueryKeys = { guide: () => ['footer', 'guide'] as const, faq: () => ['footer', 'faq'] as const, notices: () => ['footer', 'notice'] as const, noticeDetail: (id: string) => ['footer', 'notice', id] as const, terms: () => ['footer', 'terms'] as const };

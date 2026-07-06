@@ -1,0 +1,1 @@
+export const PointWorkErrorCode = { STEPS_SYNC_FAIL: 'STEPS_SYNC_FAIL', CHALLENGE_JOIN_FAIL: 'CHALLENGE_JOIN_FAIL' } as const;
