@@ -9,6 +9,8 @@ const PUB_SCREENS = [
     domain: '적립 (earn)',
     screens: [
       { label: '쿠폰 목록', href: '/dev/pub/earn/coupon-list' },
+      { label: '미션 목록', href: '/dev/pub/earn/mission-list' },  // 추가
+
     ],
   },
   // 도메인 추가 예시:

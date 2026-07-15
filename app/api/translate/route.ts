@@ -40,11 +40,22 @@ function checkRateLimit(key: string): boolean {
 // ── 미로그인 사용자도 공개 페이지 번역 사용 가능 ──────────────────────────────
 // DPoP/Bearer 토큰 검증은 미로그인 사용자를 차단하므로 적합하지 않다.
 // Origin이 없는 클라이언트(curl 등)는 Referer를 폴백으로 확인한다.
+<<<<<<< HEAD
+// dev origin은 hmmbl-web dev 서버에 맞춘다.
+// 기본은 HTTP(3000), 필요 시(`npm run dev:https`) HTTPS(3001)도 함께 허용한다.
+// ─────────────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  process.env.NEXT_PUBLIC_APP_URL ?? '',
+  ...(process.env.NEXT_PUBLIC_APP_ENV === 'dev'
+    ? ['http://localhost:3000', 'https://localhost:3001']
+    : []),
+=======
 // dev origin은 hpoint-mobile dev 서버(https, 3001)에 맞춘다.
 // ─────────────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   process.env.NEXT_PUBLIC_APP_URL ?? '',
   ...(process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? ['https://localhost:3001'] : []),
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 ].filter(Boolean);
 
 function isAllowedRequest(request: NextRequest): boolean {

@@ -13,7 +13,11 @@
  *   - 401 시 onUnauthorized 콜백 호출 → 새 토큰 수신 후 재시도
  *   - 동시 401 대기(pendingQueue)는 lib/auth/interceptor.ts가 담당
  *
+<<<<<<< HEAD
+ * 2-Lite (docs/30-dpop-mode-switch-proposal.md):
+=======
  * 2-Lite (docs/21-dpop-mode-switch-proposal.md):
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
  *   fetch는 webview/native 두 모드 모두 웹이 직접 수행한다. 달라지는 것은 DPoP
  *   proof의 서명 주체뿐이다(getDPoPHeader가 모드에 따라 웹 키 또는 네이티브
  *   KeyStore를 선택). 토큰은 두 모드 모두 _getToken()으로 동일하게 조회한다

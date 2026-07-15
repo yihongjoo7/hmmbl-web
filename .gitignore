@@ -1,5 +1,5 @@
 node_modules
-.next
 keyfile
+.next
 certificates
 .env.local

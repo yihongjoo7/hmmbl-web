@@ -1,8 +1,14 @@
 # apiClient 수정 계획 — 백엔드(login-server) 정합성
 
+<<<<<<< HEAD
+> 대상: 개발자  
+> `nextjs-new` ↔ `hmmbl-web`의 API 클라이언트 비교와 `login-server`(FastAPI) 실제 동작 검증으로 도출한 수정 항목을 누락 없이 정리합니다.  
+> 관련 문서: `06-api-client.md`, `05-auth-system.md`  
+=======
 > 대상: 개발자
 > `nextjs-new` ↔ `hpoint-mobile`의 API 클라이언트 비교와 `login-server`(FastAPI) 실제 동작 검증으로 도출한 수정 항목을 누락 없이 정리합니다.
 > 관련 문서: `15-api-client.md`, `13-auth-system.md`
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 > 대상 파일: `lib/api/apiClient.ts`, `lib/api/fileUploadClient.ts`, `lib/auth/token/tokenRefresh.ts`, `lib/auth/authService.ts`, `lib/utils/errorMessages.ts`
 
 ---
@@ -24,11 +30,19 @@
 | C1 | `fields` 백엔드 계약 부재 | 🟠 높음 | 협의 | login-server |
 | D1 | nonce 미구현 — 현재 안전 | ✅ 유지 | 확인됨 | — |
 | D2 | `X-Client-Type` 제거 — 로깅만 | ✅ 무영향 | 확인됨 | — |
+<<<<<<< HEAD
+| E1 | `06-api-client.md` 동기화 | 🟢 낮음 | 문서 | docs |
+| G1 | `apiClient - 복사본.ts` 백업 파일 — 유지(참고용) | ⚪ 정보 | 정리 | `lib/api/` |
+
+> 권장 순서: **A1·A4·F1 → A2·A3 → C1 → B1 → B4 → B2 → B5 → E1.**  
+> A1·A2·A3·A4·F1·C1은 함께 처리해야 에러 처리·폼 에러 매핑·업로드가 끝까지 동작한다.  
+=======
 | E1 | `15-api-client.md` 동기화 | 🟢 낮음 | 문서 | docs |
 | G1 | `apiClient - 복사본.ts` 백업 파일 — 유지(참고용) | ⚪ 정보 | 정리 | `lib/api/` |
 
 > 권장 순서: **A1·A4·F1 → A2·A3 → C1 → B1 → B4 → B2 → B5 → E1.**
 > A1·A2·A3·A4·F1·C1은 함께 처리해야 에러 처리·폼 에러 매핑·업로드가 끝까지 동작한다.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 > 에러 파싱은 **공용 헬퍼(`toApiError`)로 통일**해 4개 파일에 일괄 적용하는 것을 전제로 한다(부록 A).
 
 ---
@@ -57,7 +71,11 @@
 
 ### A1. 에러 응답 `detail` 중첩 미파싱 🔴
 
+<<<<<<< HEAD
+**증상.** 모든 에러에서 `error.code`가 항상 `'UNKNOWN'`, `error.message`가 항상 영문 `res.statusText`로 떨어진다. → `error.code === ErrorCode.XXX` 분기(`06-api-client.md` 4장)가 전부 무력화되고, 사용자에게 서버의 한국어 메시지 대신 `"Unauthorized"` 같은 영문이 노출된다.
+=======
 **증상.** 모든 에러에서 `error.code`가 항상 `'UNKNOWN'`, `error.message`가 항상 영문 `res.statusText`로 떨어진다. → `error.code === ErrorCode.XXX` 분기(`15-api-client.md` §4)가 전부 무력화되고, 사용자에게 서버의 한국어 메시지 대신 `"Unauthorized"` 같은 영문이 노출된다.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 **원인.** FastAPI는 `HTTPException(detail={...})`를 `{"detail":{...}}`로 감싼다. 그런데 apiClient는 최상위 `body.code`/`body.message`를 읽는다.
 
@@ -86,9 +104,15 @@ if (!res.ok) throw await toApiError(res);
 
 ### A2. `ApiError.fields` 미전달 🟠
 
+<<<<<<< HEAD
+**증상.** `applyFieldErrors()`가 항상 `false`를 반환 → 폼 필드 에러 매핑(`06-api-client.md` 5장)이 동작하지 않는다.
+
+**원인.** `withRefresh`가 `ApiError` 생성 시 4번째 인자 `fields`를 넘기지 않는다(위 A1 현재 코드). `ApiError` 시그니처(`types/api.ts`)와 `applyFieldErrors`는 `fields`를 기대한다.
+=======
 **증상.** `applyFieldErrors()`가 항상 `false`를 반환 → 폼 필드 에러 매핑(`15-api-client.md` §5)이 동작하지 않는다.
 
 **원인.** `withRefresh`가 `ApiError` 생성 시 4번째 인자 `fields`를 넘기지 않는다(위 §A1 현재 코드). `ApiError` 시그니처(`types/api.ts`)와 `applyFieldErrors`는 `fields`를 기대한다.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 **수정.** 공용 헬퍼 `toApiError`가 `d.fields`를 4번째 인자로 채운다. 단, **현재 백엔드는 `fields`를 반환하지 않으므로 C1과 함께 처리**해야 실제 폼 에러가 채워진다.
 
@@ -145,9 +169,15 @@ if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
 reject(new Error(`Upload failed: ${xhr.status}`));
 ```
 
+<<<<<<< HEAD
+**문제 1 — 에러 시스템 우회.** `instanceof ApiError`가 거짓이 되어 `status`/`code`/`message`/`fields`를 모두 잃는다. `06-api-client.md` 2장의 전역 에러 전략, `applyFieldErrors`, 한국어 메시지가 업로드에는 적용되지 않는다.
+
+**문제 2 — 토큰 만료 시 업로드 하드 실패.** `/files/upload`·`/files/image`는 `Depends(get_current_user)` 보호 엔드포인트다. 액세스 토큰이 만료된 상태로 업로드하면 401이 나는데, `uploadFile`도 상위 `fileApi.ts`도 갱신·재시도를 하지 않아 그대로 실패한다. `nextjs-new`는 이 케이스를 위해 `ensureRefreshedToken`(single-flight refresh)을 export 해 업로드 XHR에서 재사용했다 — hmmbl-web에는 해당 장치가 없다.
+=======
 **문제 1 — 에러 시스템 우회.** `instanceof ApiError`가 거짓이 되어 `status`/`code`/`message`/`fields`를 모두 잃는다. `15-api-client.md` §2의 전역 에러 전략, `applyFieldErrors`, 한국어 메시지가 업로드에는 적용되지 않는다.
 
 **문제 2 — 토큰 만료 시 업로드 하드 실패.** `/files/upload`·`/files/image`는 `Depends(get_current_user)` 보호 엔드포인트다. 액세스 토큰이 만료된 상태로 업로드하면 401이 나는데, `uploadFile`도 상위 `fileApi.ts`도 갱신·재시도를 하지 않아 그대로 실패한다. `nextjs-new`는 이 케이스를 위해 `ensureRefreshedToken`(single-flight refresh)을 export 해 업로드 XHR에서 재사용했다 — hpoint-mobile에는 해당 장치가 없다.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 **수정.**
 
@@ -203,7 +233,11 @@ return res.json();
 
 ### B4. `cache: 'no-store'` 누락 🟡
 
+<<<<<<< HEAD
+`nextjs-new`는 **모든 fetch에 `cache: 'no-store'`**를 명시했지만, hmmbl-web의 fetch 클라이언트(`apiClient.ts`·`fileUploadClient.ts`·`authService.ts`·`tokenRefresh.ts`)는 전부 미설정이다.
+=======
 `nextjs-new`는 **모든 fetch에 `cache: 'no-store'`**를 명시했지만, hpoint-mobile의 fetch 클라이언트(`apiClient.ts`·`fileUploadClient.ts`·`authService.ts`·`tokenRefresh.ts`)는 전부 미설정이다.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 **영향.** Next.js 14.2.x App Router는 `fetch`를 패치해, 서버 사이드(RSC·route handler)에서 GET 응답을 기본 캐시(Data Cache)한다. apiClient가 서버 측에서 호출될 경우 **인증 응답이 캐시되어 stale·교차 사용자 노출** 위험이 있다. 클라이언트(React Query) 전용 호출이면 영향은 작다.
 
@@ -246,7 +280,11 @@ return res.json();
 
 ### D2. `X-Client-Type` 제거 — 무영향 ✅
 
+<<<<<<< HEAD
+`nextjs-new`는 `X-Client-Type: webview|web`을 보냈지만 `hmmbl-web`은 제거했다. 백엔드는 이 헤더를 `files/router.py`에서 **로그 출력용으로만** 읽는다(`request.headers.get("X-Client-Type", "-")`). 비즈니스 로직 없음 → 동작 무영향.
+=======
 `nextjs-new`는 `X-Client-Type: webview|web`을 보냈지만 `hpoint-mobile`은 제거했다. 백엔드는 이 헤더를 `files/router.py`에서 **로그 출력용으로만** 읽는다(`request.headers.get("X-Client-Type", "-")`). 비즈니스 로직 없음 → 동작 무영향.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 🔸 선택: 업로드 로그에서 webview/web 구분이 필요하면 `buildHeaders`에 한 줄로 복원 가능(필수 아님).
 
@@ -254,11 +292,19 @@ return res.json();
 
 ## 6. 연계 문서 갱신·정리
 
+<<<<<<< HEAD
+### E1. `06-api-client.md` 동기화 🟢
+
+- 1장 "모든 요청에 자동으로 DPoP Proof 첨부" → "**액세스 토큰이 있을 때만** 첨부"로 변경(B1).
+- 3장 / 5장의 에러·`fields` 동작을 A1/A2/A4/C1 반영해 갱신.
+- 6장 업로드 에러가 `ApiError`로 통일됨을 반영(F1).
+=======
 ### E1. `15-api-client.md` 동기화 🟢
 
 - §1 "모든 요청에 자동으로 DPoP Proof 첨부" → "**액세스 토큰이 있을 때만** 첨부"로 변경(B1).
 - §3 / §5의 에러·`fields` 동작을 A1/A2/A4/C1 반영해 갱신.
 - §6 업로드 에러가 `ApiError`로 통일됨을 반영(F1).
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 ### G1. `apiClient - 복사본.ts` 백업 파일 — 유지 ⚪
 
@@ -284,7 +330,11 @@ return res.json();
 - [ ] **B4** fetch 클라이언트에 `cache: 'no-store'` 추가(최소 GET)
 - [ ] **B5** 배열 쿼리 직렬화 방식 합의(필요 시 `flatMap` 반복 파라미터로)
 - [ ] **C1** 백엔드와 `fields` 계약 합의 → A2 검증
+<<<<<<< HEAD
+- [ ] **E1** `06-api-client.md` 갱신 (G1 백업 파일은 유지 — 조치 없음)
+=======
 - [ ] **E1** `15-api-client.md` 갱신 (G1 백업 파일은 유지 — 조치 없음)
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 - [ ] **검증**: ① 미로그인 공개 API 호출 시 DPoP/키 미생성 ② 401 시 `error.code`·한국어 메시지 정상(일반 API·토큰 교환·업로드 모두) ③ 폼 필드 에러 매핑 동작 ④ 토큰 만료 후 업로드가 갱신·재시도로 성공 ⑤ `npm run build` / `type-check` 통과
 
 ---
@@ -362,9 +412,18 @@ if (!res.ok) throw await toApiError(res, 'TOKEN_EXCHANGE_FAILED');
 | `X-Client-Type` 로깅 전용 | `login-server/domains/files/router.py:44-60` |
 | 백엔드 GET은 스칼라 쿼리만 | `login-server/domains/orders/router.py:11-15` |
 | 전역 핸들러 부재 | `login-server/main.py:60-61` |
+<<<<<<< HEAD
+| 일반 API 에러 파싱 | `hmmbl-web/lib/api/apiClient.ts:124-133` |
+| 토큰 교환 에러 하드코딩 | `hmmbl-web/lib/auth/token/tokenRefresh.ts:50-51` |
+| 인증 코드 교환 평탄 파싱 | `hmmbl-web/lib/auth/authService.ts:40-46` |
+| 업로드 `Error`·401 미처리 | `hmmbl-web/lib/api/fileUploadClient.ts:118-147` |
+| 백업 파일(유지) | `hmmbl-web/lib/api/apiClient - 복사본.ts` |
+| 폼 에러 매핑 기대치 | `hmmbl-web/docs/06-api-client.md` 5장 |
+=======
 | 일반 API 에러 파싱 | `hpoint-mobile/lib/api/apiClient.ts:124-133` |
 | 토큰 교환 에러 하드코딩 | `hpoint-mobile/lib/auth/token/tokenRefresh.ts:50-51` |
 | 인증 코드 교환 평탄 파싱 | `hpoint-mobile/lib/auth/authService.ts:40-46` |
 | 업로드 `Error`·401 미처리 | `hpoint-mobile/lib/api/fileUploadClient.ts:118-147` |
 | 백업 파일(유지) | `hpoint-mobile/lib/api/apiClient - 복사본.ts` |
 | 폼 에러 매핑 기대치 | `hpoint-mobile/docs/15-api-client.md` §5 |
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda

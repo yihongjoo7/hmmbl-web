@@ -5,7 +5,11 @@
  *
  * 배경:
  *   nextjs-new의 `lib/env/bridge.ts`에 해당하는 파일.
+<<<<<<< HEAD
+ *   hmmbl-web 이전 시 타입 정의는 `bridgeProtocol.ts`에 통합되었으나
+=======
  *   hpoint-mobile 이전 시 타입 정의는 `bridgeProtocol.ts`에 통합되었으나
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
  *   import 경로(`@/lib/bridge/bridge`)를 사용하는 파일 7개를 위해
  *   이 re-export 파일을 생성한다.
  *

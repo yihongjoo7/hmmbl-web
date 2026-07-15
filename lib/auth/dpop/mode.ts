@@ -1,7 +1,11 @@
 /**
  * lib/auth/dpop/mode.ts
  *
+<<<<<<< HEAD
+ * DPoP 처리 모드 결정 (2-Lite, docs/30-dpop-mode-switch-proposal.md §4)
+=======
  * DPoP 처리 모드 결정 (2-Lite, docs/21-dpop-mode-switch-proposal.md §4)
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
  *
  * - webview (기본): 웹이 DPoP 키·proof·토큰을 자체 처리 (현행)
  * - native: DPoP proof 서명만 네이티브에 위임(createDpopProof), 토큰은 네이티브가

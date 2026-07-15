@@ -2,7 +2,11 @@
  * lib/bridge/index.ts
  *
  * Bridge 인프라 공개 API 진입점.
+<<<<<<< HEAD
+ * nextjs-new의 `@/lib/env` 배럴에 해당하는 hmmbl-web 버전.
+=======
  * nextjs-new의 `@/lib/env` 배럴에 해당하는 hpoint-mobile 버전.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
  *
  * 사용 예:
  *   import { bridgeEventBus, BridgeErrorCode, isWebView } from '@/lib/bridge';

@@ -1,5 +1,18 @@
 # 202. 웹뷰 DPoP 네이티브 전면 위임 (2-Full) — 작업 설계서
 
+<<<<<<< HEAD
+> ⚠️ **이력 안내:** 이 설계(2-Full)는 203에서 실제 구현되었으나, 이후 요건이 "proof만 네이티브 위임 + 웹이 서버로 직접 요청"(2-Lite)으로 다시 바뀌어 **204에서 되돌려졌습니다.** 현재 구현 기준 문서는 `05-auth-system.md` 9장입니다. 이 문서는 2-Full 채택 당시의 설계 기록으로 보존합니다.  
+>
+> 상태: 설계(구현 전) / 작성 기준: **소스 코드 직접 분석** (docs/20100 등 기존 문서는 현행화 안 됨 → 미참조)  
+> 목표 요건(고객·심사): **"DPoP는 네이티브가 처리한다 + 액세스 토큰을 웹(JS) 계층에 두지 않는다"**  
+> 결론: 웹뷰의 모든 인증 API 호출을 네이티브에 위임(2-Full). `.env.local` 로 기존 자체처리(Mode 1)와 전환.  
+> 변경이력: v2 — 소스 재대조로 누락 15건(G1–G15) 반영(14장 추적표). 해당 절에 통합.  
+> v3 — 11장 검증계획 보강(N1–N15: 동시성·수명주기·봉투/쿼리 정합·에러매핑·감사종합·검증수단·순서/롤백·기기매트릭스).  
+> v4 — 타 절 구현수준 보강(5.4절 transport 계약, 6.5절 파일/함수 인벤토리, 8장 업로드 계약, 9장 시퀀스, 12장 권장기본값) + 15장 구현 충분성·범위경계 추가.  
+> v5 — A1/A3/B1/B2 결정 확정 반영(4장 게이팅·5.2절 에러매핑표·7장 헤더·12장 확정·15장 해소).  
+> v6 — 오해 소지 보강: Rules of Hooks 패턴(6.1-5절/6.5절), native 401 우회 명시(6.1-3절), 업로드 진행률 배선(6.1-4절/5.4절), ApiBridgeHandler 예외매핑·멀티파트(6.2-2절), authState dispatch 지점·appForeground 트리거(6.2-3절).  
+> v7 — **16장 구현 코드 계약(복붙 기준)** 추가: 분기 지점 정정(verb 레벨), 레이어 규칙(주입 onClearAuth), 401/transportError 처리, 토큰 로그 redact, validator·CSP·errorMessages 스켈레톤. 목표=문서만으로 버그 없이 구현.
+=======
 > ⚠️ **이력 안내:** 이 설계(2-Full)는 203에서 실제 구현되었으나, 이후 요건이 "proof만 네이티브 위임 + 웹이 서버로 직접 요청"(2-Lite)으로 다시 바뀌어 **204에서 되돌려졌습니다.** 현재 구현 기준 문서는 `13-auth-system.md` §9입니다. 이 문서는 2-Full 채택 당시의 설계 기록으로 보존합니다.
 >
 > 상태: 설계(구현 전) / 작성 기준: **소스 코드 직접 분석** (docs/20100 등 기존 문서는 현행화 안 됨 → 미참조)
@@ -11,6 +24,7 @@
 > v5 — A1/A3/B1/B2 결정 확정 반영(§4 게이팅·§5.2 에러매핑표·§7 헤더·§12 확정·§15 해소).
 > v6 — 오해 소지 보강: Rules of Hooks 패턴(§6.1-5/§6.5), native 401 우회 명시(§6.1-3), 업로드 진행률 배선(§6.1-4/§5.4), ApiBridgeHandler 예외매핑·멀티파트(§6.2-2), authState dispatch 지점·appForeground 트리거(§6.2-3).
 > v7 — **§16 구현 코드 계약(복붙 기준)** 추가: 분기 지점 정정(verb 레벨), 레이어 규칙(주입 onClearAuth), 401/transportError 처리, 토큰 로그 redact, validator·CSP·errorMessages 스켈레톤. 목표=문서만으로 버그 없이 구현.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 ---
 
@@ -32,7 +46,11 @@
 
 설계 전제. 모두 실제 소스에서 확인.
 
+<<<<<<< HEAD
+**웹뷰 (hmmbl-web)**
+=======
 **웹뷰 (hpoint-mobile)**
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 - 인증 송신구는 **두 곳뿐**: `lib/api/apiClient.ts`(get/post/put/delete), `lib/api/fileUploadClient.ts`(uploadFile). 둘 다 `_getToken()`+`createDPoPProof()` 첨부, `useAuthInterceptor.ts` **단일 지점**에서 DI.
 - 토큰 생성 부트스트랩(웹에 토큰을 들이는 실경로): `app/(protected)/layout.tsx`(`requestAuthCode→initAuthFromCode→setAuth`). 그 외 `simple-auth`·`file-upload-test`의 requestAuthCode 는 **주석**, `/api/auth/route.ts` 는 **빈 스텁** — 활성 경로 아님.
 - 통합 마운트 지점 **`app/WebviewLayoutClient.tsx`**: `useAuthInterceptor()` + `useKeyRotation()` + `useTokenReceiver()` 를 함께 마운트.
@@ -111,7 +129,11 @@ interface NativeApiRequest {
   requestId: string;                 // crypto.randomUUID()
   method: 'GET'|'POST'|'PUT'|'DELETE';
   path: string;                      // (G11) baseUrl 제외, 쿼리스트링 포함 완성 경로. 절대 URL 금지
+<<<<<<< HEAD
+  headers?: Record<string,string>;   // (7장) 화이트리스트만. Authorization/DPoP/Cookie 금지
+=======
   headers?: Record<string,string>;   // (§7) 화이트리스트만. Authorization/DPoP/Cookie 금지
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
   body?: string | null;              // JSON 문자열
   upload?: { fileBase64: string; fileName: string; mimeType: string; field?: string };
 }
@@ -147,7 +169,11 @@ interface NativeApiResponse {
 - 웹 `lib/bridge/nativeApiTransport.ts`(신규): `Map<requestId,{resolve,reject,timer}>`. `apiResponse` 를 `requestId` 로 라우팅, 미존재 id drop, 요청별 타임아웃(기본 30s·업로드 120s).
 - 신규 이벤트(`apiResponse`,`apiUploadProgress`,`authState`)를 `bridgeClient.ts` `ALLOWED_EVENTS`+`EVENT_VALIDATORS` 에 등록.
 - **(G13) 페이로드 크기:** 응답은 `evaluateJavascript` 문자열로 주입되므로 대용량 JSON(대형 목록)은 성능/한계 우려 — 서버 페이지네이션 준수, 과대 응답 회피.
+<<<<<<< HEAD
+- **(G14) 무결성:** 인페이지 JS가 `window.onBridgeEvent('apiResponse',…)` 를 직접 호출해 대기 요청을 위조 resolve 가능(동일오리진 신뢰의 본질적 한계). requestId 는 추측 불가(UUID), 신뢰 오리진 로드·CSP(7장) 전제. 잔여 위험 명시.
+=======
 - **(G14) 무결성:** 인페이지 JS가 `window.onBridgeEvent('apiResponse',…)` 를 직접 호출해 대기 요청을 위조 resolve 가능(동일오리진 신뢰의 본질적 한계). requestId 는 추측 불가(UUID), 신뢰 오리진 로드·CSP(§7) 전제. 잔여 위험 명시.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 ### 5.4 구현 계약 (스켈레톤)
 
@@ -196,6 +222,17 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 
 ## 6. 레이어별 변경 설계
 
+<<<<<<< HEAD
+### 6.1 웹뷰 (hmmbl-web) — 공개 API 불변, transport·배선만 분기
+1. **신규 `lib/auth/dpop/mode.ts`** (4장, 능력 게이팅 포함).
+2. **신규 `lib/bridge/nativeApiTransport.ts`** — `callViaNative(req): Promise<NativeApiResponse>`.
+3. **`lib/api/apiClient.ts`** — 모드 분기는 **verb(get/post/put/delete) 레벨**에서 한다(⚠️ `withRefresh(url,method,fn)` 는 바디를 클로저 `fn` 안에 갖고 있어 그 안에서 분기 불가 — `withRefresh` 는 webview 전용으로 둔다). native → `nativeRequest(method, path, body)` → `Response` 정규화 → 기존 후처리 재사용. get/post/put/delete **시그니처·반환·throw 불변** → 호출부 변경 0. **native 분기는 웹 401 재시도(`_onUnauthorized`/`withRefresh` 루프)를 타지 않는다**(네이티브 `AuthInterceptor` 가 이미 갱신·재시도; 최종 401·`NOT_AUTHENTICATED` → `_onClearAuth` + `UNAUTHORIZED`, 5.2절). **상세 스켈레톤 16.1절.**
+4. **`lib/api/fileUploadClient.ts`** — native: `File`→base64 → `callViaNative({upload}, 120_000)`. **진행률 배선:** 요청 직전 `apiUploadProgress` 를 `requestId` 로 구독해 `onProgress(percent)` 호출, `apiResponse`(완료) 또는 타임아웃 시 구독 해제(누수 주의). `validateFile` 선검증(8장)으로 상한 초과는 base64 전에 거부.
+5. **(G6) 통합 마운트 `app/WebviewLayoutClient.tsx` 분기** — `resolveDpopMode()` 기준.
+   **⚠️ Rules of Hooks 준수:** 훅을 조건부로 호출하지 말 것(`if (mode) useX()` 금지 — 렌더마다 훅 호출 수가 달라지면 React 에러). `WebviewLayoutClient` 의 **호출부는 그대로**(네 훅 모두 무조건 호출)두고, **분기는 각 훅 내부에서 `resolveDpopMode()` early-return** 으로 처리한다. (대안: webview/native 별 자식 컴포넌트를 분리해 각기 다른 훅셋을 마운트.)
+   - `useAuthInterceptor`: native 모드면 내부에서 credential 주입 없이 return(transport 분기 전담).
+   - **(G4) `useKeyRotation`**: native 모드면 내부 early-return(웹 키 없음 → `rotateDPoPKey` 무의미). 로테이션은 네이티브 KeyStore 책임(6.2절).
+=======
 ### 6.1 웹뷰 (hpoint-mobile) — 공개 API 불변, transport·배선만 분기
 1. **신규 `lib/auth/dpop/mode.ts`** (§4, 능력 게이팅 포함).
 2. **신규 `lib/bridge/nativeApiTransport.ts`** — `callViaNative(req): Promise<NativeApiResponse>`.
@@ -205,6 +242,7 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
    **⚠️ Rules of Hooks 준수:** 훅을 조건부로 호출하지 말 것(`if (mode) useX()` 금지 — 렌더마다 훅 호출 수가 달라지면 React 에러). `WebviewLayoutClient` 의 **호출부는 그대로**(네 훅 모두 무조건 호출)두고, **분기는 각 훅 내부에서 `resolveDpopMode()` early-return** 으로 처리한다. (대안: webview/native 별 자식 컴포넌트를 분리해 각기 다른 훅셋을 마운트.)
    - `useAuthInterceptor`: native 모드면 내부에서 credential 주입 없이 return(transport 분기 전담).
    - **(G4) `useKeyRotation`**: native 모드면 내부 early-return(웹 키 없음 → `rotateDPoPKey` 무의미). 로테이션은 네이티브 KeyStore 책임(§6.2).
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
    - **(G6) 토큰→상태 수신 교체**: `useTokenReceiver` 는 native 모드면 내부 early-return(토큰 JS 유입 차단). 신규 `useAuthStateReceiver` 는 **항상 호출**하되 webview 모드면 내부 return(`authState` 수신·토큰 미포함).
 6. **(G7) 인증상태 store/수신** — `useAuthStore` 에 **토큰 없이 `{user,isAuthenticated}` 만** 세팅하는 액션 추가(`setAuthState`). native 모드 `_accessToken` 은 항상 null. 신규 `useAuthStateReceiver` 가 이를 호출. 초기 유실 방지를 위해 마운트 시 `bridge.requestAuthState()` 로 **당겨오기**(push-only 레이스 차단).
 7. **(G6/부트스트랩) `app/(protected)/layout.tsx` 분기(필수)** — 현행은 미인증 시 `requestAuthCode→initAuthFromCode→setAuth(user, accessToken)` 로 **토큰을 JS에 생성**(요건 위반). native 모드는 이 경로를 호출하지 않고 `authState` 수신만으로 `isAuthenticated` 판정. webview 모드 현행 유지.
@@ -214,7 +252,11 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 
 ### 6.2 네이티브 (android-mobile) — okHttpClient 재사용
 1. **`JsBridge.callApi(requestJson: String)`**(void) → `ApiBridgeHandler` 위임, IO 코루틴 처리 후 `dispatchBridgeEvent("apiResponse", ...)`.
+<<<<<<< HEAD
+2. **신규 `core/bridge/handler/ApiBridgeHandler.kt`** — 파싱 → **검증(7장)** → `API_BASE_URL` 결합 → `okhttp3.Request`(body=JSON `RequestBody`, **화이트리스트 헤더만**) → `apiClient.okHttpClient.newCall(req).execute()`(DPoP·Auth·401 자동) → `{requestId,ok,status,bodyText,isEmpty}` dispatch.
+=======
 2. **신규 `core/bridge/handler/ApiBridgeHandler.kt`** — 파싱 → **검증(§7)** → `API_BASE_URL` 결합 → `okhttp3.Request`(body=JSON `RequestBody`, **화이트리스트 헤더만**) → `apiClient.okHttpClient.newCall(req).execute()`(DPoP·Auth·401 자동) → `{requestId,ok,status,bodyText,isEmpty}` dispatch.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
    - **예외→transportError 매핑(구체):** `SocketTimeoutException`→`TIMEOUT`, 연결 실패 `IOException`(UnknownHost 등)→`OFFLINE`, JSON 파싱/그 외→`NATIVE_ERROR`, 갱신 영구실패(최종 401)→`NOT_AUTHENTICATED`.
    - **업로드:** `MultipartBody.Builder().setType(FORM).addFormDataPart(field, fileName, base64→RequestBody(mimeType))`. 진행률은 `RequestBody` 를 **바이트카운팅 래퍼**로 감싸 누적 percent 를 `apiUploadProgress{requestId,percent}` emit.
 3. **인증상태 푸시** — `dispatchBridgeEvent("authState", {user, isAuthenticated})`(토큰 미포함)를 다음 지점에서 emit:
@@ -236,6 +278,21 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 ### 6.5 신규 파일 + 변경 함수 인벤토리 (구현 체크리스트)
 
 **신규(웹)**
+<<<<<<< HEAD
+- `lib/auth/dpop/mode.ts` — `resolveDpopMode()` (4장).
+- `lib/bridge/nativeApiTransport.ts` — `callViaNative()` (5.4절).
+- `features/auth/hooks/useAuthStateReceiver.ts` — `authState` 구독 + 마운트 시 `window.bridge.requestAuthState()` → `useAuthStore.setAuthState(user)`.
+
+**변경(웹) — 함수 단위**
+- `lib/api/apiClient.ts`: **verb(get/post/put/delete) 레벨** `resolveDpopMode()` 분기(16.1절) — native → `nativeRequest()`(→`callViaNative`→`new Response`→`!ok→toApiError`/`json()`/`isEmpty→undefined`, 401→`_onClearAuth`+UNAUTHORIZED), webview → 기존 `withRefresh()`. **시그니처 불변**.
+- `lib/api/fileUploadClient.ts` `sendUpload()`: native 분기(File→base64). `uploadFile` **시그니처 불변**.
+- `features/auth/hooks/useAuthStore.ts`: `setAuthState(user)` 액션 추가(토큰 미설정, `_accessToken` null 고정).
+- `features/auth/hooks/useAuthInterceptor.ts`: native 모드 시 credential 주입 skip.
+- `app/WebviewLayoutClient.tsx`: **호출부 불변(네 훅 무조건 호출)** — 모드 분기는 **각 훅 내부 early-return**(6.1-5절, Rules of Hooks). `useAuthStateReceiver` 신규 추가(webview 모드면 내부 no-op).
+- `app/(protected)/layout.tsx`: native 부트스트랩 분기(6.1-7절).
+- `features/auth/hooks/useAuth.ts` `logout()`: native 분기(6.1-8절).
+- `types/bridge.ts`·`lib/bridge/bridgeProtocol.ts`·`lib/bridge/bridgeClient.ts`: 메서드/이벤트/allowlist 등록(6.4절).
+=======
 - `lib/auth/dpop/mode.ts` — `resolveDpopMode()` (§4).
 - `lib/bridge/nativeApiTransport.ts` — `callViaNative()` (§5.4).
 - `features/auth/hooks/useAuthStateReceiver.ts` — `authState` 구독 + 마운트 시 `window.bridge.requestAuthState()` → `useAuthStore.setAuthState(user)`.
@@ -249,6 +306,7 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 - `app/(protected)/layout.tsx`: native 부트스트랩 분기(§6.1-7).
 - `features/auth/hooks/useAuth.ts` `logout()`: native 분기(§6.1-8).
 - `types/bridge.ts`·`lib/bridge/bridgeProtocol.ts`·`lib/bridge/bridgeClient.ts`: 메서드/이벤트/allowlist 등록(§6.4).
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 **신규(네이티브)**
 - `core/bridge/handler/ApiBridgeHandler.kt` — `callApi(req, dispatch)`: 검증→`okHttpClient` 실행→`apiResponse`; 업로드 `MultipartBody`+진행률.
@@ -275,9 +333,15 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 
 **(G3) CSP `connect-src` 강화(감사 레버)** — native 모드에선 웹이 API를 부르지 않으므로 `middleware.ts` 의 `connect-src` 에서 **`NEXT_PUBLIC_API_BASE_URL` 제거**(`'self'` 유지). "웹은 백엔드에 닿을 수 없음"을 브라우저 수준에서 강제·입증. 브릿지는 네트워크가 아니라 CSP 무관.
 
+<<<<<<< HEAD
+**(G2) 로그 위생** — 네이티브 BODY 로깅 비활성(6.2-4절): 토큰·PII 의 logcat 노출 차단.
+
+**(G14) 브릿지 무결성** — apiResponse 위조 위험(5.3절): 신뢰 오리진 로드(UA 게이트)·CSP·UUID requestId 전제. 잔여 위험은 인-웹뷰 인증의 본질.
+=======
 **(G2) 로그 위생** — 네이티브 BODY 로깅 비활성(§6.2-4): 토큰·PII 의 logcat 노출 차단.
 
 **(G14) 브릿지 무결성** — apiResponse 위조 위험(§5.3): 신뢰 오리진 로드(UA 게이트)·CSP·UUID requestId 전제. 잔여 위험은 인-웹뷰 인증의 본질.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 **RFC 9449 정합:** 서명자=송신자=네이티브 → proof-of-possession 의미 강화.
 
@@ -292,7 +356,11 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 **업로드 계약(구체)**
 - 웹: `validateFile`(10MB·MIME)를 **base64 인코딩 전에 선검증** → 초과 시 callApi 미발생(즉시 거부). 통과분만 `FileReader`→base64 → `callViaNative({upload:{fileBase64,fileName,mimeType,field}}, 120_000)`.
 - 네이티브: `MultipartBody.Builder().setType(FORM).addFormDataPart(field, fileName, base64→RequestBody(mimeType))`. 진행률은 RequestBody 를 바이트카운팅 래퍼로 감싸 `apiUploadProgress{requestId,percent}` emit.
+<<<<<<< HEAD
+- 크기: base64 ~33% 팽창(10MB→~13.3MB 문자열 1회 전달). 그 이상은 거부(현 단계) 또는 후속 `content://` 핸드오프(12-2절).
+=======
 - 크기: base64 ~33% 팽창(10MB→~13.3MB 문자열 1회 전달). 그 이상은 거부(현 단계) 또는 후속 `content://` 핸드오프(§12-2).
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 ---
 
@@ -300,7 +368,11 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 - **부트스트랩:** 웹뷰 attach 시 네이티브 `authState` 푸시 + 웹 `requestAuthState()` 당겨오기(G7 레이스 차단). 미인증이면 callApi 401→네이티브 갱신 시도, 실패 시 네이티브 로그인.
 - **(G12) 포그라운드 복귀:** 네이티브 `appForeground` 시 세션이 바뀌었을 수 있어 `authState` 재푸시 → 웹 동기화.
 - **401:** 네이티브 `AuthInterceptor` 가 갱신·재시도 후 최종 응답만 전달(웹은 401 로직 미보유).
+<<<<<<< HEAD
+- **(G5) 로그아웃:** 웹발은 `bridge.logout()` 권위(6.1-8절). 네이티브 세션·키 정리 후 `authState{isAuthenticated:false}` → 웹 `clearAuth`. 갱신 영구 실패 시도 동일 처리.
+=======
 - **(G5) 로그아웃:** 웹발은 `bridge.logout()` 권위(§6.1-8). 네이티브 세션·키 정리 후 `authState{isAuthenticated:false}` → 웹 `clearAuth`. 갱신 영구 실패 시도 동일 처리.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 **시퀀스(요약)**
 ```
@@ -316,12 +388,20 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 
 ## 10. native 모드에서 비활성/정리되는 기존 경로
 - 비활성(코드 유지, 미호출): `proofGenerator`(웹키)·`authService.initAuthFromCode`·`tokenRefresh.refreshAccessToken`·`interceptor.createAuthInterceptor`·`useTokenReceiver`(토큰 수신)·**`useKeyRotation`/`rotateDPoPKey`(G4)**. webview 모드는 현행 유지.
+<<<<<<< HEAD
+- 데드/스텁(삭제 말고 메모만, CLAUDE.md 3장): `lib/api/apiClient - 복사본.ts`, **`app/api/auth/route.ts`(빈 스텁, G15)**.
+=======
 - 데드/스텁(삭제 말고 메모만, CLAUDE.md §3): `lib/api/apiClient - 복사본.ts`, **`app/api/auth/route.ts`(빈 스텁, G15)**.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 - `app/dev/**` 인증 시나리오는 감사 빌드(native)에서 제외/가드.
 
 ---
 
+<<<<<<< HEAD
+## 11. 구현 단계 + 검증 (CLAUDE.md 4장 목표중심)
+=======
 ## 11. 구현 단계 + 검증 (CLAUDE.md §4 목표중심)
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 수단 표기: **자동**=단위/통합(모킹 브릿지, CI) · **기기**=실기기 수기 · **로그**=logcat/서버로그.
 
@@ -366,10 +446,17 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 ## 12. 결정 사항 (확정)
 
 **확정**
+<<<<<<< HEAD
+1. **(A1) 버전·폴백** — 네이티브 도입 `1.0.0`, 과거 배포 앱 없음 → 능력 체크가 실가드, 비정상 부재 시 차단+안내(4장).
+2. **(A3) user 스키마** — 현행 5필드(id/name/email/role/profileImage), `profileImage` 미설정은 `""`(현행과 동일).
+3. **(B1) 헤더** — 허용 빈 목록, `Authorization`·`DPoP`·`Cookie`·`Content-Type` 네이티브 전담(7장).
+4. **(B2) 에러** — 전부 토스트(5.2절 매핑표), 폼 필드검증(`fields`)은 인라인, `NOT_AUTHENTICATED` 는 토스트+로그인 이동. `errorMessages` 에 network/timeout/unauthorized 추가.
+=======
 1. **(A1) 버전·폴백** — 네이티브 도입 `1.0.0`, 과거 배포 앱 없음 → 능력 체크가 실가드, 비정상 부재 시 차단+안내(§4).
 2. **(A3) user 스키마** — 현행 5필드(id/name/email/role/profileImage), `profileImage` 미설정은 `""`(현행과 동일).
 3. **(B1) 헤더** — 허용 빈 목록, `Authorization`·`DPoP`·`Cookie`·`Content-Type` 네이티브 전담(§7).
 4. **(B2) 에러** — 전부 토스트(§5.2 매핑표), 폼 필드검증(`fields`)은 인라인, `NOT_AUTHENTICATED` 는 토스트+로그인 이동. `errorMessages` 에 network/timeout/unauthorized 추가.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 5. **로깅·CSP 범위** — native/release 전용 적용(dev 디버깅 보존).
 6. **dev 페이지** — 감사 빌드에서 빌드 제외(middleware 가 prod `/dev` 차단 중이나 명시 제외).
 7. **업로드** — 1단계 10MB base64, 초과 거부(대용량 후속).
@@ -397,6 +484,23 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 ## 14. 재점검 보완 추적표 (소스 재대조, G1–G15)
 | ID | 심각도 | 소스 근거 | 보완 | 반영 절 |
 |---|---|---|---|---|
+<<<<<<< HEAD
+| G1 | 중대 | `lib/bridge/appVersion.ts`; 웹/네이티브 분리 배포 | callApi 능력 체크+버전 게이트+폴백 정책 | 4장, 11장(14), 12-1절 |
+| G2 | 중대 | `core/network/ApiClient.kt` BODY 로깅 무조건 ON | release/native 로깅 NONE/HEADERS | 6.2-4절, 7장, 13장 |
+| G3 | 중대 | `middleware.ts` connect-src 에 API 오리진 | native 모드 connect-src 에서 API 제거 | 7장, 11장(16), 13장 |
+| G4 | 중대 | `WebviewLayoutClient`→`useKeyRotation`→`rotateDPoPKey`(웹키) | native 비활성 + 네이티브 KeyStore 로테이션 | 6.1-5절, 6.2-5절, 10장 |
+| G5 | 중대 | `features/auth/hooks/useAuth.ts::logout` 복합 | bridge.logout 권위, 중복/웹키 정리 | 6.1-8절, 9장 |
+| G6 | 중대 | `app/WebviewLayoutClient.tsx` 마운트 3종 | 마운트 분기, tokenReceiver→authState | 6.1-5절~6.1-7절 |
+| G7 | 중간 | `useAuthStore.setAuth` 토큰 필수; push 레이스 | setAuthState 액션 + requestAuthState 당겨오기 | 6.1-6절, 9장 |
+| G8 | 중간 | 네이티브/오프라인 실패 매핑 부재 | transportError→ApiError 매핑 | 5.2절, 6.2-2절 |
+| G9 | 중간 | `apiClient` 204/`content-length`·`toApiError` | isEmpty + 에러 detail 봉투 보존 | 5.2절 |
+| G10 | 중간 | `app/api/*`(messages/translate/native-strings) | 위임 제외, 로그인서버만 callApi | 6.1-9절 |
+| G11 | 경미 | `apiClient.get` 쿼리 직렬화(배열) | path 에 완성 전달, 네이티브 재구현 금지 | 5.1절 |
+| G12 | 경미 | 네이티브 `appForeground` emit | 포그라운드 시 authState 재동기화 | 6.2-3절, 9장 |
+| G13 | 경미 | `evaluateJavascript` 문자열 주입 | 대용량 JSON 페이지네이션 | 5.3절, 8장 |
+| G14 | 경미 | `window.onBridgeEvent` 전역 | UUID requestId+CSP+신뢰오리진 전제 | 5.3절, 7장 |
+| G15 | 경미 | `apiClient - 복사본.ts`, `api/auth` 스텁 | 데드코드 메모(미삭제) | 10장 |
+=======
 | G1 | 중대 | `lib/bridge/appVersion.ts`; 웹/네이티브 분리 배포 | callApi 능력 체크+버전 게이트+폴백 정책 | §4, §11(14), §12-1 |
 | G2 | 중대 | `core/network/ApiClient.kt` BODY 로깅 무조건 ON | release/native 로깅 NONE/HEADERS | §6.2-4, §7, §13 |
 | G3 | 중대 | `middleware.ts` connect-src 에 API 오리진 | native 모드 connect-src 에서 API 제거 | §7, §11(16), §13 |
@@ -412,6 +516,7 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 | G13 | 경미 | `evaluateJavascript` 문자열 주입 | 대용량 JSON 페이지네이션 | §5.3, §8 |
 | G14 | 경미 | `window.onBridgeEvent` 전역 | UUID requestId+CSP+신뢰오리진 전제 | §5.3, §7 |
 | G15 | 경미 | `apiClient - 복사본.ts`, `api/auth` 스텁 | 데드코드 메모(미삭제) | §10 |
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 ---
 
@@ -420,6 +525,17 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 > 본 설계서는 **설계·계약 수준까지 자족적**(어떤 파일·함수·계약·검증인지 확정)이다. 아래는 문서 외부에서 확정되어야 구현이 **완결**된다.
 
 **A. 외부 승인·입력**
+<<<<<<< HEAD
+- ✅ **확정:** callApi 도입 버전 `1.0.0`·과거 배포 앱 없음(4장·12장), `authState.user` 5필드·`profileImage=""`(12장), 12장 결정 일체.
+- 잔여: 고객/심사 요건 **최종 문구**(토큰 위치는 확인됨 — 추가 통제 요구 여부만).
+
+**B. 코드 대조로 확정**
+- ✅ **확정:** 헤더 화이트리스트(빈 목록 + 네이티브 전담, 7장), `transportError`→`ApiError` 매핑표(5.2절).
+- 잔여(구현 시): 응답헤더 미사용 회귀 가드. (`appForeground` 트리거 위치·예외 매핑·진행률 배선은 6.2-3절·6.2-2절·6.1-4절 에 명시됨.)
+
+**C. 산출물 (문서엔 계획, 별도 작성)**
+- 모킹 브릿지 + 동시성/타임아웃/레이스 단위테스트 픽스처(11.2절).
+=======
 - ✅ **확정:** callApi 도입 버전 `1.0.0`·과거 배포 앱 없음(§4·§12), `authState.user` 5필드·`profileImage=""`(§12), §12 결정 일체.
 - 잔여: 고객/심사 요건 **최종 문구**(토큰 위치는 확인됨 — 추가 통제 요구 여부만).
 
@@ -429,13 +545,18 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 
 **C. 산출물 (문서엔 계획, 별도 작성)**
 - 모킹 브릿지 + 동시성/타임아웃/레이스 단위테스트 픽스처(§11.2).
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 - 감사 자동검증(IndexedDB 키 부재·토큰 부재·웹발요청 0건).
 
 **D. 범위 경계**
 - **플랫폼: 본 설계는 Android(android-mobile) 한정.** iOS WebView 가 존재하면 WKWebView 브릿지 + Keychain/Secure Enclave 로 **병행 구현 필요**(현 워크스페이스에 iOS 소스 없음).
 - 네이티브 키 로테이션 정책/주기(서버 키-미바인딩이라 선택 사안).
 
+<<<<<<< HEAD
+**판정(v7):** 16장 구현 코드 계약으로 **문서만으로 버그 없이 구현 가능** 수준. 분기 지점(verb 레벨)·레이어 규칙(lib 순수성·주입 `onClearAuth`)·401 처리·토큰 로그 redact·validator·CSP 분기까지 명문화. 잔여는 (C)테스트 산출물, (D)iOS 병행(해당 시)뿐.
+=======
 **판정(v7):** §16 구현 코드 계약으로 **문서만으로 버그 없이 구현 가능** 수준. 분기 지점(verb 레벨)·레이어 규칙(lib 순수성·주입 `onClearAuth`)·401 처리·토큰 로그 redact·validator·CSP 분기까지 명문화. 잔여는 (C)테스트 산출물, (D)iOS 병행(해당 시)뿐.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 ---
 
@@ -449,7 +570,11 @@ data class UploadPart(val fileBase64:String, val fileName:String, val mimeType:S
 import { resolveDpopMode } from '@/lib/auth/dpop/mode';
 import { callViaNative } from '@/lib/bridge/nativeApiTransport';
 import { ApiError } from '@/types/api';
+<<<<<<< HEAD
+import { fallbackMessages } from '@/lib/utils/errorMessages';   // 16.9절 키 추가
+=======
 import { fallbackMessages } from '@/lib/utils/errorMessages';   // §16.9 키 추가
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 function mapTransportError(code: NonNullable<NativeApiResponse['transportError']>): ApiError {
   switch (code) {
@@ -487,7 +612,11 @@ export function callViaNativeUpload(req: Omit<NativeApiRequest,'requestId'>, onP
 //        → settle(resolve/reject/timeout) 시 progress 구독·pending 모두 해제(누수 방지).
 // lib/api/fileUploadClient.ts sendUpload() native 분기:
 //   validateFile 선검증(상한 초과 즉시 거부) → File→base64(FileReader) →
+<<<<<<< HEAD
+//   callViaNativeUpload({method:'POST', path:url, upload:{fileBase64,fileName,mimeType,field:'file'}}, onProgress) → 16.1절 와 동일 정규화.
+=======
 //   callViaNativeUpload({method:'POST', path:url, upload:{fileBase64,fileName,mimeType,field:'file'}}, onProgress) → §16.1 와 동일 정규화.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 //   ※ 401/NOT_AUTHENTICATED 도 동일 처리하려면 configureFileUploadClient 에 onClearAuth 주입 추가.
 ```
 
@@ -513,7 +642,11 @@ export function useAuthStateReceiver() {
 WebviewLayoutClient: 네 훅(useAuthInterceptor·useKeyRotation·useTokenReceiver·useAuthStateReceiver) 무조건 호출. 분기는 각 훅 '내부' 최상단.
 useKeyRotation/useTokenReceiver: useEffect 첫 줄 `if (resolveDpopMode()==='native') return;`
 useAuthInterceptor: native 모드여도 configureApiClient({ getToken:()=>null, onUnauthorized: async()=>{throw new ApiError(401,'UNAUTHORIZED','')}, onClearAuth: clearAuth }) 호출
+<<<<<<< HEAD
+                    → _onClearAuth 주입(16.1절 NOT_AUTHENTICATED 용). getToken/onUnauthorized 는 native 경로 미사용. webview 모드는 기존 주입.
+=======
                     → _onClearAuth 주입(§16.1 NOT_AUTHENTICATED 용). getToken/onUnauthorized 는 native 경로 미사용. webview 모드는 기존 주입.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 ProtectedLayout:    useEffect 첫 줄 `if (resolveDpopMode()==='native') return;` (requestAuthCode 부트스트랩 skip)
 useAuth.logout():   native → window.bridge.logout(); (authApi.logout()·deleteDPoPKeyPair() 생략) → clearAuth()/redirect 공통.
 ```
@@ -549,7 +682,11 @@ class ApiBridgeHandler @Inject constructor(
   fun callApi(json: String, dispatch:(String,String)->Unit) { scope.launch {
     val req = parse(json); val id = req.requestId               // CallApiReq
     try {
+<<<<<<< HEAD
+      require(!req.path.startsWith("http")) { "absolute url 금지" }        // 화이트리스트(7장)
+=======
       require(!req.path.startsWith("http")) { "absolute url 금지" }        // 화이트리스트(§7)
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
       val url = API_BASE_URL.trimEnd('/') + "/" + req.path.trimStart('/')
       val rb = Request.Builder().url(url)
       req.headers?.filterKeys { it in ALLOWED_HEADERS }?.forEach { (k,v) -> rb.header(k,v) }
@@ -573,7 +710,11 @@ class ApiBridgeHandler @Inject constructor(
     dispatch("authState", JSONObject().apply{ put("isAuthenticated", u!=null); put("user", u?.toJson()) }.toString())
   }
 }
+<<<<<<< HEAD
+// 최종 401(okHttp AuthInterceptor 갱신 실패)은 status=401 응답으로 내려가고, 웹 16.1절 이 _onClearAuth+UNAUTHORIZED 처리.
+=======
 // 최종 401(okHttp AuthInterceptor 갱신 실패)은 status=401 응답으로 내려가고, 웹 §16.1 이 _onClearAuth+UNAUTHORIZED 처리.
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 ```
 
 ### 16.8 네이티브 — JsBridge·로깅·트리거
@@ -586,7 +727,11 @@ HttpLoggingInterceptor().apply {
   level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
   redactHeader("Authorization"); redactHeader("DPoP")
 }
+<<<<<<< HEAD
+// authState dispatch 트리거: AuthRepository 로그인/refresh/logout 성공·실패, WebView attach, 호스트 Activity onResume(6.2-3절)
+=======
 // authState dispatch 트리거: AuthRepository 로그인/refresh/logout 성공·실패, WebView attach, 호스트 Activity onResume(§6.2-3)
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 ```
 
 ### 16.9 웹 — errorMessages 추가

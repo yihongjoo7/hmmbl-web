@@ -1,7 +1,11 @@
 /**
  * lib/auth/dpop/proofProvider.ts
  *
+<<<<<<< HEAD
+ * DPoP proof 공급자 — 모드별로 proof 서명 주체만 갈아끼운다 (2-Lite, docs/30 §4.2)
+=======
  * DPoP proof 공급자 — 모드별로 proof 서명 주체만 갈아끼운다 (2-Lite, docs/21 §4.2)
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
  *
  * - webview 모드: 웹이 자체 ES256 키(IndexedDB)로 서명 (lib/auth/dpop/proofGenerator.ts)
  * - native 모드:  네이티브 KeyStore가 서명 → window.bridge.createDpopProof(method, url)

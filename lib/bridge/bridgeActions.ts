@@ -4,7 +4,11 @@
  * 네이티브 브릿지 호출 래퍼 함수 모음
  *
  * 원본: nextjs-new/lib/env/bridgeActions.ts
+<<<<<<< HEAD
+ * 이전 변경: import 경로를 hmmbl-web 구조에 맞게 조정
+=======
  * 이전 변경: import 경로를 hpoint-mobile 구조에 맞게 조정
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
  *   - bridgeEventBus, BridgeTimeoutError → './bridgeClient'
  *   - isWebView, isCameraError, CameraResult 등 → './bridgeProtocol' + './bridgeClient'
  *
@@ -117,7 +121,11 @@ export async function requestPin(): Promise<boolean> {
 }
 
 /**
+<<<<<<< HEAD
+ * 네이티브 세션의 액세스 토큰을 요청한다(2-Lite, docs/30 §4.2·§5.2).
+=======
  * 네이티브 세션의 액세스 토큰을 요청한다(2-Lite, docs/21 §4.2·§5.2).
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
  *
  * 네이티브가 자기 세션을 확인(필요 시 자체 리프레시)한 후 `tokenReceived` 이벤트로
  * `{ access_token, user }`를 푸시한다. 토큰을 store에 반영하는 것은

@@ -1,8 +1,14 @@
 # apiClient 수정 반영 결과 (구현)
 
+<<<<<<< HEAD
+> 대상: 개발자  
+> `200-apiclient-fix-plan.md`의 수정 항목을 소스에 반영한 결과 기록. 결정 사항·변경 파일·검증 결과를 담는다.  
+> 작업일: 2026-06-21 · 관련 문서: `200-apiclient-fix-plan.md`, `06-api-client.md`
+=======
 > 대상: 개발자
 > `200-apiclient-fix-plan.md`의 수정 항목을 소스에 반영한 결과 기록. 결정 사항·변경 파일·검증 결과를 담는다.
 > 작업일: 2026-06-21 · 관련 문서: `200-apiclient-fix-plan.md`, `15-api-client.md`
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 ---
 
@@ -16,7 +22,11 @@
 
 ## 2. 변경 파일
 
+<<<<<<< HEAD
+### 프론트엔드 (hmmbl-web)
+=======
 ### 프론트엔드 (hpoint-mobile)
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 
 | 파일 | 변경 내용 | 항목 |
 |---|---|---|
@@ -53,7 +63,11 @@
 | C1 | 백엔드 `fields` 계약 | ✅ 전역 422 핸들러 |
 | D1 | nonce | ✅ 현행 유지(안전) |
 | D2 | `X-Client-Type` | ✅ 현행 유지(무영향) |
+<<<<<<< HEAD
+| E1 | `06-api-client.md` 동기화 | ✅ |
+=======
 | E1 | `15-api-client.md` 동기화 | ✅ |
+>>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
 | G1 | `apiClient - 복사본.ts` | ✅ 유지(미변경) |
 
 ---
