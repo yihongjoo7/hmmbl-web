@@ -15,24 +15,26 @@
  */
 
 import pino from 'pino';
+import pretty from 'pino-pretty';
 
 /** dev 여부 판단: 앱 환경 또는 Node 환경 기준 */
 const isDev =
   process.env.NEXT_PUBLIC_APP_ENV === 'dev' || process.env.NODE_ENV === 'development';
 
-export const logger = pino({
-  /** dev: debug 이상 출력 / 운영: warn 이상만 출력 */
-  level: isDev ? 'debug' : 'warn',
-
-  // dev 환경에서만 pino-pretty 적용 (운영에서는 JSON 출력으로 로그 수집 효율화)
-  ...(isDev && {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize:      true,
+// 주의: pino의 `transport: { target: 'pino-pretty' }` 옵션은 내부적으로
+// worker_threads를 띄워 대상 모듈을 "동적으로" require 하는 방식이라
+// Turbopack이 정적으로 추적하지 못해 instrumentation.ts 번들링이
+// MODULE_UNPARSABLE 로 실패하는 원인이 된다.
+// (관련: vercel/next.js #86099, #87342)
+// pino-pretty 스트림을 직접 생성해 동기적으로 넘겨주면 worker_threads를
+// 타지 않아 Turbopack에서도 안전하게 동작한다.
+export const logger = pino(
+  { level: isDev ? 'debug' : 'warn' },
+  isDev
+    ? pretty({
+        colorize: true,
         translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
-        ignore:        'pid,hostname',
-      },
-    },
-  }),
-});
+        ignore: 'pid,hostname',
+      })
+    : undefined
+);

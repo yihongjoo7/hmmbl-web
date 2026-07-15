@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Swiper 커스텀 인디케이터 ───────────────────────────── */
+
+/* ① 숫자 배지 (우하단) */
+.swiper-fraction-badge .swiper-pagination-fraction {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  left: auto;
+  width: auto;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+/* ② 숫자 배지 + 재생/멈춤 (좌하단) */
+.swiper-fraction-control .swiper-pagination-fraction {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: auto;
+  width: auto;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+/* ③ 점 인디케이터 */
+.swiper-dot-pagination .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  opacity: 1;
+  transition: background 0.2s;
+}
+.swiper-dot-pagination .swiper-pagination-bullet-active {
+  background: #ffffff;
+}
+
+/* ④ 타원형 (active pill) */
+.swiper-pill-pagination .swiper-pagination-bullet {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.4);
+  opacity: 1;
+  border-radius: 9999px;
+  transition:
+    width 0.3s ease,
+    background 0.2s;
+}
+.swiper-pill-pagination .swiper-pagination-bullet-active {
+  width: 24px;
+  background: #ffffff;
+}
+
+/* ==========================================================================
+   Font
+   ========================================================================== */
+@font-face {
+  font-family: 'GlobalHappinessSansFont';
+  src: url('/fonts/ko/Happiness-Sans-Regular.woff2') format('woff2');
+  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+FF00-FFEF;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bold */
+@font-face {
+  font-family: 'GlobalHappinessSansFont';
+  src: url('/fonts/ko/Happiness-Sans-Bold.woff2') format('woff2');
+  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+FF00-FFEF;
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Title */
+@font-face {
+  font-family: 'GlobalHappinessSansFont';
+  src: url('/fonts/ko/Happiness-Sans-Title.woff2') format('woff2');
+  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+FF00-FFEF;
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ==========================================================================
+   모바일 최적화 커스텀 리셋 스타일 (Tailwind 규칙 적용)
+   ========================================================================== */
+@layer base {
+  html {
+    /* 텍스트 크기 자동 조절(크롬/사파리) 방지(가로 전환 시 글자 커짐 막기) */
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+
+    /* 스크롤 부드럽게 설정 및 터치 오버플로우 바운스(고무줄 효과) 제어 */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+
+    /* 하단 주소창 대비 100% 높이 대응 */
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+
+    min-height: 100dvh;
+
+    font-family:
+      'GlobalHappinessSansFont',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      'Noto Sans',
+      sans-serif,
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      'Noto Color Emoji';
+
+    /* 기존 디자인 가이드에 맞춘 기본 글자색 및 배경색 설정 */
+    color: #0f172a;
+    background-color: #f1f5f9;
+
+    /* 텍스트 드래그 선택 금지 (앱처럼 느껴지게 할 때 활성화) */
+    -webkit-user-select: none;
+    user-select: none;
+
+    /* 가로 스크롤바가 터지는 현상 원천 차단 */
+    overflow-x: hidden;
+  }
+
+  /* 모바일 사파리/크롬 등에서 링크, 버튼 클릭 시 생기는 파란색 음영(하이라이트) 제거 */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'GlobalHappinessSansFont', sans-serif !important;
+  }
+
+  /* 모바일 입력창(Input) 터치 및 포커스 최적화 */
+  input,
+  textarea,
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  /* 아이폰 폼 요소 포커스 시 화면이 자동으로 줌인(확대)되는 현상 방지 */
+  input[type='text'],
+  input[type='number'],
+  input[type='search'],
+  input[type='tel'],
+  input[type='email'],
+  textarea {
+    font-size: 16px;
+  }
+
+  /* 이미지 및 미디어 요소가 화면 밖으로 탈출하는 것 방지 */
+  img,
+  svg,
+  video,
+  canvas,
+  audio {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  em {
+    font-style: normal;
+  }
+}
+
+@layer components {
+  /* ======= Toast UI 커스텀 스타일 start ======= */
+  .adm-toast-main:has(.adm-toast-main-custom) {
+    width: calc(
+      100vw - 48px
+    ) !important; /* 전체화면에서 양옆 24px씩 여백을 제외한 full로 노출되어야하여 calc처리 */
+    max-width: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .adm-toast-main:has(.adm-toast-main-custom) .adm-auto-center,
+  .adm-toast-main:has(.adm-toast-main-custom) .adm-auto-center-content {
+    width: 100% !important;
+  }
+
+  .adm-toast-main-custom {
+    width: 100% !important;
+  }
+  /* ======= Toast UI 커스텀 스타일 end ======= */
+}

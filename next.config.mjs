@@ -14,6 +14,10 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.hpoint.com' },
     ],
   },
+  // Turbopack이 pino의 동적 transport(worker_threads, pino-pretty)를
+  // 정적으로 추적하지 못해 instrumentation.ts 번들링이 실패하는 문제 방지
+  // (MODULE_UNPARSABLE: Could not parse module 'instrumentation.ts')
+  serverExternalPackages: ['pino', 'pino-pretty', 'thread-stream'],
 };
 
 export default nextConfig;

@@ -3,3 +3,4 @@ keyfile
 .next
 certificates
 .env.local
+*.7z
