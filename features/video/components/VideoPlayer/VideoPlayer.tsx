@@ -10,7 +10,7 @@
  *   - onLoadedMetadata에서만 duration 추출, timeupdate는 상태값 참조
  *
  * 기능:
- *   - HTML5 <video> 기반 재생
+ *   - HTML5 <video> 기반 재생 (웹/웹뷰 공통)
  *   - 재생 진행 콜백 (onProgress), 완료/에러 콜백 지원
  *   - 로딩/에러 오버레이 표시
  *   - 접근성: aria-label, role="status" 적용

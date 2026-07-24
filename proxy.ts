@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * 네이티브 WebView가 User-Agent 끝에 주입하는 식별 토큰.
+ * iOS(WKWebView.customUserAgent) / Android(WebSettings.userAgentString)와
+ * 반드시 동일한 값을 사용한다. 이 토큰이 없는 요청(일반 브라우저)은
+ * 비-dev(staging·prod)에서 모든 페이지가 /blocked 로 차단된다.
+ */
+const WEBVIEW_UA_MARKER = 'HPointApp';
+
 function generateNonce(): string {
   return Buffer.from(crypto.randomUUID()).toString('base64');
 }
 
 function applySecurityHeaders(response: NextResponse, nonce: string) {
   const isDev  = process.env.NODE_ENV === 'development';
+  // 2-Lite: webview·native 두 모드 모두 웹이 API 서버에 직접 fetch를 수행하므로
+  // connect-src에 API 오리진을 항상 허용한다(모드 분기 없음).
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
   response.headers.set('X-Frame-Options',        'DENY');
@@ -47,6 +57,16 @@ export function proxy(request: NextRequest) {
   // /dev/* 프로덕션 접근 차단
   if (pathname.startsWith('/dev') && isProd) {
     return NextResponse.rewrite(new URL('/404', request.url));
+  }
+
+  // 네이티브 WebView 전용 게이트:
+  // 비-dev에서 UA 마커가 없는(네이티브를 거치지 않은) 요청은 모든 페이지를 /blocked 로 차단.
+  // /blocked 자체는 예외로 통과시켜 무한 rewrite를 방지한다.
+  if (isProd && pathname !== '/blocked') {
+    const ua = request.headers.get('user-agent') ?? '';
+    if (!ua.includes(WEBVIEW_UA_MARKER)) {
+      return NextResponse.rewrite(new URL('/blocked', request.url));
+    }
   }
 
   const nonce = generateNonce();

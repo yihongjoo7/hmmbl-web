@@ -11,7 +11,7 @@
 ## 1. 전체 레이아웃 구조
 
 ```
-app/layout.tsx              ← 루트 레이아웃 (전역 Provider, 앱 초기화)
+app/layout.tsx              ← 루트 레이아웃 (전역 Provider, 웹뷰 초기화)
   ├── app/(protected)/layout.tsx   ← 로그인 필요 화면 (인증 부트스트랩만 담당, GNB·FNB는 각 page.tsx가 렌더링)
   └── app/(public)/layout.tsx      ← 비로그인 화면 (pass-through, GNB는 필요한 page.tsx가 직접 렌더링)
 ```
@@ -84,22 +84,22 @@ import { FNB } from '@/components/layout/FNB';
 
 ---
 
-## 4. WebviewLayoutClient — 루트 레이아웃 클라이언트
+## 4. WebviewLayout — 웹뷰 래퍼
 
 **파일:** `app/WebviewLayoutClient.tsx`
 
-앱 전역 초기화(인증 인터셉터 연결, 다국어 Provider)를 담당합니다.  
+네이티브 앱 웹뷰 환경에서 필요한 초기화(인증 인터셉터, 브릿지 토큰·인증상태 수신, DPoP 키 로테이션, 다국어 Provider)를 담당합니다.  
 개발자 영역이므로 퍼블리셔가 직접 수정하지 않습니다.
 
 ---
 
 ## 5. 라우트 그룹별 레이아웃 분기
 
-### (protected) — 인증 부트스트랩 화면
+### (protected) — webview SSO 부트스트랩 화면
 
 `app/(protected)/layout.tsx`에서 처리합니다.
 
-- 미인증 상태면 httpOnly refresh 쿠키로 조용히 세션 복구를 시도하고, 실패하면 `/auth/login`으로 리다이렉트합니다(상세: `04-routing-architecture.md` 3장).
+- **인증 리다이렉트를 하지 않습니다.** 미인증 상태면 webview-code SSO를 자동 수행해 웹뷰 자체 토큰을 발급받을 뿐, 화면 접근을 막거나 로그인 페이지로 보내지 않습니다(상세: `04-routing-architecture.md` 3장).
 - GNB/FNB를 layout이 자동으로 씌워주지 않습니다. 필요한 각 `page.tsx`가 직접 렌더링합니다(2장~3장).
 - 퍼블리셔가 작업하는 대부분의 화면이 이 그룹에 속합니다.
 
@@ -111,12 +111,12 @@ app/(protected)/
   └── ...
 ```
 
-### (public) — 인증 부트스트랩이 없는 화면
+### (public) — webview SSO 부트스트랩이 없는 화면
 
 `app/(public)/layout.tsx`에서 처리합니다.  
 현재 이 파일은 `children`을 그대로 반환하는 pass-through이며, GNB 관련 로직도 포함하지 않습니다.
 
-- (protected)의 인증 부트스트랩을 거치지 않습니다.
+- (protected)의 webview-code SSO 부트스트랩을 거치지 않습니다.
 - GNB는 (protected)와 마찬가지로 필요한 화면이 직접 렌더링합니다.
 - 스플래시, 온보딩, 로그인, 약관, 공개 공지사항 등이 해당됩니다.
 

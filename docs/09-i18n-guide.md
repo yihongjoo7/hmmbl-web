@@ -1,36 +1,43 @@
 # 다국어(i18n) 처리 가이드
 
 > 대상: 개발자  
-> `HPOINT_LOCALE` 쿠키 기반 로케일 관리, `next-intl` 클라이언트 Provider, 정적 번역 메시지를 다룹니다.
+> `HPOINT_LOCALE` 쿠키 기반 로케일 관리, `next-intl` 클라이언트 Provider, 정적 번역 메시지, Bridge 연동을 다룹니다.
 
 ---
 
 ## 1. 개요
 
-이 프로젝트는 `next-intl` **패키지의 `NextIntlClientProvider`는 사용하지만, `next-intl`의 Next.js 빌드 플러그인·미들웨어·URL 라우팅은 사용하지 않습니다**(`next.config.mjs`에 플러그인 wrap 없음).  
-대신 **쿠키(`HPOINT_LOCALE`)** 기반으로 클라이언트에서 로케일을 결정합니다. 언어 전환 UI는 현재 없으며, 쿠키가 없으면 기본 로케일(`ko`)을 사용합니다.
+이 프로젝트는 `next-intl` **패키지의 `NextIntlClientProvider`는 사용하지만, `next-intl`의 Next.js 빌드 플러그인·미들웨어·URL 라우팅은 사용하지 않습니다**(`next.config.mjs`에 플러그인 wrap 없음 — "WebView 전용, 다국어 라우팅 불필요").  
+대신 **쿠키(`HPOINT_LOCALE`) + Bridge 이벤트** 기반으로 클라이언트에서 로케일을 결정합니다.  
+네이티브 앱이 로케일을 관리하며, Bridge 이벤트로 웹에 전달합니다.
 
 지원 로케일은 `lib/i18n/config.ts`의 `supportedLocales`에 정의되어 있습니다.
 
 | 로케일 | 번역 소스 |
 |---|---|
 | `ko`(기본) · `en` · `zh` | `messages/*.json` 번들 (빌드에 포함) |
-| `ja` · `th` · `vi` · `ms` | `/api/messages?locale=xx` (서버 Azure 번역 + 캐시, 동적) |
 
 ---
 
 ## 2. 로케일 흐름
 
 ```
-HPOINT_LOCALE 쿠키 조회 (path=/, Secure, SameSite=Strict, 1년)
-      │  쿠키 없음/미지원 값 → defaultLocale('ko')로 폴백
-      ▼
-app/LocaleProvider.tsx 가 첫 렌더 전 useState lazy initializer로 동기 결정
-  - 정적 로케일(ko/en/zh): 번들 메시지를 즉시 동기 선택
-  - 동적 로케일(ja/th/vi/ms): /api/messages fetch (초기 렌더는 en 폴백)
+네이티브 앱 언어 변경
       │
       ▼
-NextIntlClientProvider locale·messages 로 하위 트리 렌더
+Bridge 이벤트 발행
+  appLanguage        → 초기 로케일 전달 (즉시 적용, reload 없음)
+  appLanguageChanged → 언어 변경 (쿠키 갱신 + 페이지 전체 reload)
+      │
+      ▼
+app/LocaleProvider.tsx 가 구독
+  - 정적 로케일(ko/en/zh): 번들 메시지로 즉시 동기 교체
+      │
+      ▼
+HPOINT_LOCALE 쿠키 갱신 (path=/, Secure, SameSite=Strict, 1년)
+      │
+      ▼
+NextIntlClientProvider locale·messages 갱신 → 하위 컴포넌트 리렌더
 ```
 
 ---
@@ -54,7 +61,7 @@ export function WebviewLayoutClient({ children }) {
 
 - 첫 렌더 전 `useState` lazy initializer로 쿠키에서 로케일을 동기 결정 → 플리커 없음.
 - 정적 로케일(`ko`/`en`/`zh`)은 `messages/*.json`을 모듈 레벨에서 미리 import해 즉시 교체.
-- 동적 로케일(`ja`/`th`/`vi`/`ms`)은 마운트 시 `/api/messages`를 fetch합니다(로딩 중 스피너 표시).
+- `appLanguage`/`appLanguageChanged` Bridge 이벤트를 직접 구독해 위 로직을 재실행합니다.
 - 최종적으로 `<NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Seoul">`로 하위 트리를 감쌉니다. `timeZone`은 서버·클라이언트 날짜 포맷 불일치 방지를 위해 `Asia/Seoul`로 고정되어 있습니다(앱 기본 로케일이 `ko`이므로).
 - `<HtmlLang locale={locale} />`로 `<html lang>` 속성도 동기화합니다.
 
@@ -139,6 +146,6 @@ formatDate(new Date(), 'ko');       // "2026년 7월 2일"
 
 ## 7. 로케일 관련 주의사항
 
-- 언어 전환 UI가 추가되면 `HPOINT_LOCALE` 쿠키를 설정한 뒤 새로고침하는 방식으로 연결합니다. 현재는 쿠키를 설정하는 진입점이 없어 항상 기본 로케일을 사용합니다.
+- `HPOINT_LOCALE` 쿠키는 네이티브 앱이 설정하는 것이 원칙입니다. 웹에서 직접 쿠키를 수정하는 것은 `LocaleProvider` 내부(Bridge 이벤트 수신 시)에서만 허용합니다.
 - 지원하지 않는 로케일 값이 쿠키에 있으면 기본값 `'ko'`로 폴백됩니다(`lib/i18n/config.ts`의 `defaultLocale`).
 - SSR이 비활성화된 컴포넌트이므로(`ssr:false`) 서버 사이드 쿠키 접근 이슈 자체가 없습니다 — 대신 첫 렌더가 항상 클라이언트에서 일어나는 트레이드오프가 있습니다.

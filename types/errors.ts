@@ -1,4 +1,4 @@
-// 전역 에러 코드 정의 (HTTP·비즈니스)
+// 전역 에러 코드 정의 (HTTP·비즈니스·Bridge)
 export const ErrorCode = {
   // HTTP 공통
   UNAUTHORIZED:               'UNAUTHORIZED',

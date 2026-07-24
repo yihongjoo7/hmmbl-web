@@ -13,7 +13,9 @@ interface UseHapticReturn {
 
 export function useHaptic(): UseHapticReturn {
   const trigger = useCallback((type: HapticType = 'light') => {
-    if (typeof navigator.vibrate === 'function') {
+    if (window.bridge?.hapticFeedback) {
+      window.bridge.hapticFeedback(type);
+    } else if (typeof navigator.vibrate === 'function') {
       navigator.vibrate(VIBRATION_DURATION[type]);
     }
   }, []);

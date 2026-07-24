@@ -28,7 +28,7 @@ export function ImageUploader({ onSelect, accept = 'image/*', maxSizeMB = 10, la
     onSelect(file);
   };
 
-  // 항상 카메라/갤러리 선택 시트 표시
+  // WebView 전용 — 항상 카메라/갤러리 선택 시트 표시
   const handleClick = () => {
     setSheetOpen(true);
   };

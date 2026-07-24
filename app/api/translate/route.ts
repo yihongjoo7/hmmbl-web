@@ -40,7 +40,7 @@ function checkRateLimit(key: string): boolean {
 // ── 미로그인 사용자도 공개 페이지 번역 사용 가능 ──────────────────────────────
 // DPoP/Bearer 토큰 검증은 미로그인 사용자를 차단하므로 적합하지 않다.
 // Origin이 없는 클라이언트(curl 등)는 Referer를 폴백으로 확인한다.
-// dev origin은 hmfrnt-web dev 서버에 맞춘다.
+// dev origin은 hmmbl-web dev 서버에 맞춘다.
 // 기본은 HTTP(3000), 필요 시(`npm run dev:https`) HTTPS(3001)도 함께 허용한다.
 // ─────────────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [

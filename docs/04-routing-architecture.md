@@ -3,7 +3,7 @@
 > 대상: 개발자  
 > Next.js 14 App Router 구조, 라우트 그룹, 라우트 보호 개요를 다룹니다.  
 > ⚠️ 보안/인증 미들웨어 파일명은 `middleware.ts`가 아니라 `proxy.ts`(export 함수명 `proxy`)입니다.  
-> `proxy.ts`의 CSP·보안 헤더·nonce·인증 부트스트랩 구현 상세는 관리자 문서 [30-security-infrastructure.md](./30-security-infrastructure.md)를 참고하세요.
+> WebView UA 게이트, `proxy.ts`의 CSP·보안 헤더·nonce·SSO 부트스트랩 구현 상세는 관리자 문서 [31-security-infrastructure.md](./31-security-infrastructure.md)를 참고하세요.
 
 ---
 
@@ -13,7 +13,7 @@
 
 ```
 app/
-├── (protected)/          # 인증 부트스트랩 라우트 (3장)
+├── (protected)/          # webview SSO 부트스트랩 라우트 (3장)
 │   ├── layout.tsx
 │   ├── earn/ use/ pay/ my/ main/ settings/ footer/
 │   └── member/ menu/ search/ terms/ file-upload-test/
@@ -21,7 +21,7 @@ app/
 ├── (public)/             # 부트스트랩 없는 라우트
 │   ├── layout.tsx
 │   ├── intro/            # 온보딩
-│   ├── auth/             # 인증 플로우 (login 포함)
+│   ├── auth/             # 인증 플로우
 │   ├── member/           # 회원가입
 │   ├── use/              # shop, coupon-deal (일부 화면은 비인증 접근)
 │   └── menu/             # settings, cs (레거시 메뉴 경로)
@@ -31,12 +31,13 @@ app/
 │   ├── pub/              # 퍼블리셔 화면 미리보기
 │   ├── ui/                # UI 컴포넌트 카탈로그
 │   ├── ref/               # 코드 레퍼런스
-│   ├── auth/, member-list/, campaign-test/, _components/
+│   ├── auth/, bridge/, member-list/, campaign-test/, _components/
 │
+├── blocked/              # WebView UA 게이트 차단 안내 (라우트 그룹 밖, 게이트 예외)
 ├── api/                  # Route Handler (/api/messages, /api/translate 등)
 ├── layout.tsx            # 루트 레이아웃 (Providers 포함)
 ├── providers.tsx         # QueryClient, Toast 등 전역 Provider
-├── WebviewLayoutClient.tsx  # 인증 인터셉터 훅 마운트 (31-auth-dpop-internals.md 5장)
+├── WebviewLayoutClient.tsx  # 인증 인터셉터·키 로테이션·토큰 수신 훅 마운트 (32-auth-dpop-internals.md 5장)
 ├── LocaleProvider.tsx    # i18n 로케일 provider
 └── global-error.tsx      # 루트 레이아웃을 포함한 전역 에러
 ```
@@ -47,14 +48,14 @@ app/
 ⚠️ `use`·`menu`라는 이름의 폴더가 `(protected)`와 `(public)` 양쪽에 각각 하나씩 존재합니다.  
 도메인 이름은 같지만 그 안에 들어있는 화면은 서로 다르며, 화면 하나하나의 인증 요건에 따라 어느 그룹에 속할지가 갈립니다.
 
-- `(protected)/use/`: 로그인이 필요한 "사용" 화면들
+- `(protected)/use/`: 로그인(webview SSO)이 필요한 "사용" 화면들
 - `(public)/use/`: `shop`, `coupon-deal` 등 로그인 없이도 볼 수 있는 일부 "사용" 화면
 - `(protected)/menu/`: 로그인이 필요한 메뉴 화면들
 - `(public)/menu/`: `settings`, `cs` 등 로그인 없이 접근 가능한 레거시 메뉴 경로
 
 즉 `use`·`menu` 폴더 자체가 인증 여부를 결정하지 않습니다.  
 새 화면을 추가할 때는 "폴더 이름"이 아니라 "이 화면이 로그인이 필요한가"를 먼저 판단해야 합니다.  
-판단 기준은 해당 화면이 로그인 부트스트랩(3장) — 미인증 시 조용히 세션 복구를 시도하고, 실패하면 로그인 화면으로 리다이렉트하는 절차 — 을 필요로 하는지입니다.  
+판단 기준은 해당 화면이 webview SSO 부트스트랩(3장) — 네이티브 앱이 이미 로그인된 사용자 세션을 웹뷰에 자동으로 넘겨주는 절차 — 을 필요로 하는지입니다.  
 필요하면 `(protected)`에, 필요 없으면(비로그인 상태에서도 접근 가능해야 하면) `(public)`에 화면을 추가하세요.
 
 ---
@@ -107,21 +108,21 @@ export function MissionDetailPage() {
 
 ## 3. 라우트 보호 개요
 
-모든 요청은 `proxy.ts`를 통과하며, 보안 헤더 적용과 `/dev/*` 프로덕션 차단을 담당합니다. 개발자가 알아야 할 핵심은 다음과 같습니다.
+모든 요청은 `proxy.ts`를 통과하며, 보안 헤더 적용과 인증 체크를 담당합니다. 개발자가 알아야 할 핵심은 다음과 같습니다.
 
-- `(protected)/layout.tsx`는 마운트 시 미인증 상태면 httpOnly refresh 쿠키로 조용히 세션 복구를 시도합니다. 실패하면 `/auth/login?redirect=...`로 리다이렉트합니다. 새 화면을 만들 때 별도의 로그인 리다이렉트 로직을 추가할 필요가 없습니다.
-- 실제 접근 제어는 두 곳에서 이뤄집니다: ① 위 리다이렉트, ② 백엔드 API가 DPoP 액세스 토큰을 요구 — 미인증 상태로는 실데이터 API 호출이 실패합니다.
-- 화면 단위 접근 제한이 추가로 필요하면 각 페이지가 `isAuthenticated`를 읽어 개별적으로 UI를 제한합니다(예: `app/(protected)/main/page.tsx`).
+- `(protected)/layout.tsx`는 미인증 상태를 로그인 화면으로 **리다이렉트하지 않습니다.** 대신 webview-code SSO를 자동 수행해 웹뷰 자체 토큰을 발급받습니다(네이티브 로그인 세션과 웹뷰 세션은 별개이므로). 새 화면을 만들 때 별도의 로그인 리다이렉트 로직을 추가할 필요가 없습니다.
+- 실제 접근 제어는 두 곳에서 이뤄집니다: ① `proxy.ts`의 WebView UA 게이트 — 일반 브라우저는 `/blocked`로 차단, ② 백엔드 API가 DPoP 액세스 토큰을 요구 — 미인증 상태로는 실데이터 API 호출이 실패합니다.
+- 화면 자체는 라우트 레벨에서 강제 리다이렉트되지 않으며, 필요 시 각 페이지가 `isAuthenticated`를 읽어 개별적으로 UI를 제한합니다(예: `app/(protected)/main/page.tsx`).
 
-`proxy.ts`의 CSP·보안 헤더·nonce·`(protected)/layout.tsx` 인증 부트스트랩 실제 구현은 관리자 문서 참고: [30-security-infrastructure.md](./30-security-infrastructure.md)
+`proxy.ts`의 CSP·보안 헤더·nonce·`(protected)/layout.tsx` SSO 부트스트랩 실제 구현은 관리자 문서 참고: [31-security-infrastructure.md](./31-security-infrastructure.md)
 
 > 자세한 인증 흐름: `05-auth-system.md` 1장
 
 ---
 
-## 4. WebviewLayoutClient
+## 4. WebviewLayout
 
-루트 레이아웃 클라이언트 컴포넌트(`WebviewLayoutClient.tsx`)는 인증 인터셉터 연결과 다국어 Provider 래핑을 담당합니다.  
+웹뷰 전용 레이아웃 컴포넌트(`WebviewLayoutClient.tsx`)는 GNB·FNB 등 네이티브 앱 UI를 고려한 padding과 safe-area를 적용합니다.  
 레이아웃 관련 상세 내용은 `12-layout-guide.md`를 참고하세요.
 
 ---

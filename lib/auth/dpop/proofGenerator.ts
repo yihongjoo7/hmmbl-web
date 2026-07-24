@@ -3,7 +3,7 @@
  *
  * - ES256 키쌍을 생성하여 IndexedDB에 저장
  * - API 요청마다 DPoP proof JWT를 생성
- * - HTTPS 환경에서만 동작 (SubtleCrypto 필요)
+ * - WebView 환경(HTTPS)에서만 동작 (SubtleCrypto 필요)
  */
 
 export const DPOP_DB_NAME = 'hpoint-dpop';

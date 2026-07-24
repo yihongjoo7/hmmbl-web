@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'hmfrnt-web',
+      name: 'hmmbl-web',
       script: 'node_modules/next/dist/bin/next',
       args: 'start',
       cwd: './',
@@ -25,7 +25,7 @@ module.exports = {
     },
     {
       // 기본 개발 서버 — HTTP, 포트 3000
-      name: 'hmfrnt-web-dev',
+      name: 'hmmbl-web-dev',
       script: 'node_modules/next/dist/bin/next',
       args: 'dev --port 3000 --hostname 0.0.0.0',
       cwd: './',
@@ -44,7 +44,7 @@ module.exports = {
     },
     {
       // 선택적 HTTPS 개발 서버 — 실기기/LAN 테스트, DPoP WebCrypto 확인 등 HTTPS가 필요할 때만 사용
-      name: 'hmfrnt-web-dev-https',
+      name: 'hmmbl-web-dev-https',
       script: 'node_modules/next/dist/bin/next',
       args: 'dev --experimental-https --experimental-https-key ./keyfile/local-key.pem --experimental-https-cert ./keyfile/local-cert.pem --port 3001 --hostname 0.0.0.0',
       cwd: './',

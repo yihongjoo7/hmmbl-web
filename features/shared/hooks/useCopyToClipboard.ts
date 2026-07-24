@@ -19,7 +19,9 @@ export function useCopyToClipboard(): UseCopyToClipboardReturn {
   const copy = useCallback(async (text: string): Promise<boolean> => {
     setError(null);
     try {
-      if (navigator.clipboard?.writeText) {
+      if (window.bridge?.copyToClipboard) {
+        window.bridge.copyToClipboard(text);
+      } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
       } else {
         const ta = document.createElement('textarea');

@@ -2,7 +2,10 @@
 
 > 대상: 개발자  
 > apiClient DI 패턴, React Query 설정, 파일 업로드, 에러 타입, formErrors를 다룹니다.  
-> 2026-06 갱신: DPoP 토큰 게이팅·에러 `detail` 파싱·업로드 ApiError 적용 — 상세는 `200`/`201` 문서 참조.
+> 2026-06 갱신: DPoP 토큰 게이팅·에러 `detail` 파싱·업로드 ApiError 적용 — 상세는 `200`/`201` 문서 참조.  
+> 추가 갱신(2-Lite): `NEXT_PUBLIC_DPOP_MODE=native`일 때도 apiClient·fileUploadClient는 `fetch`/`XHR`을 웹이 직접 호출합니다.  
+> 달라지는 것은 DPoP proof 서명 주체뿐입니다(1.1절, 6장).  
+> 상세는 `32-auth-dpop-internals.md` 7장, `docs/30-dpop-mode-switch-proposal.md` 참조.
 
 ---
 
@@ -10,7 +13,7 @@
 
 ### 초기화 (DI 패턴)
 
-`apiClient`는 Zustand에 직접 의존하지 않습니다.  
+`apiClient`는 Zustand·bridge에 직접 의존하지 않습니다.  
 앱 시작 시 콜백을 주입해 인증을 연결합니다.
 
 ```ts
@@ -32,6 +35,13 @@ configureApiClient({
 
 `configureApiClient()`는 `features/auth/hooks/useAuthInterceptor.ts`의 `useEffect`에서 호출합니다.  
 `accessToken`은 Zustand state가 아니라 모듈 변수이므로 `getAccessToken()`으로 동기 조회합니다(상세: `05-auth-system.md` 2장).
+
+### 1.1 native 모드 (2-Lite)
+
+`resolveDpopMode() === 'native'`이어도 `fetch` 흐름(`withRefresh`)은 동일하게 사용됩니다.  
+`buildHeaders()`가 DPoP 헤더를 만들 때 `lib/auth/dpop/proofProvider.ts::getDPoPHeader()`를 통해 서명 주체만 웹 키 → 네이티브 KeyStore(`bridge.createDpopProof`)로 바뀝니다.  
+apiClient의 공개 API(`get`/`post`/`put`/`delete`) 시그니처·401 재시도 로직은 두 모드에서 동일하므로 화면·서비스 호출부는 변경이 없습니다.  
+상세는 `08-bridge-guide.md` 9장, `32-auth-dpop-internals.md` 7장을 참고하세요.
 
 ### 요청 메서드
 
@@ -302,6 +312,10 @@ configureFileUploadClient({
   onUnauthorized,
 });
 ```
+
+native 모드에서도 파일 전송(fetch/XHR)은 웹이 직접 수행합니다.  
+DPoP 헤더만 `getDPoPHeader()`로 서명 주체가 바뀝니다.  
+상세는 1.1절과 동일합니다.
 
 ### 파일 검증
 
