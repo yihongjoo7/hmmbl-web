@@ -16,7 +16,7 @@ Node.js와 npm이 설치되어 있어야 합니다.
 
 ```bash
 # 프로젝트 루트에서 실행
-cd hmmbl-web
+cd hmfrnt-web
 # 폐쇄망 환경이므로 npm install 대신 파일 서버의 node_modules를 복사 (02-environment-setup.md 1장 참고)
 npm run dev
 ```
@@ -151,7 +151,7 @@ ALLOWED_DEV_ORIGINS=192.168.1.100   # 개발 PC의 로컬 IP 주소
 인증서 파일 경로는 `package.json`의 `dev:https` 스크립트에 `./keyfile/local-key.pem`·`./keyfile/local-cert.pem`(프로젝트 루트 `keyfile/` 폴더)로 지정되어 있습니다.
 
 ### 화면이 빈 상태로 나타나는 경우
-- `(protected)` 화면은 미로그인 상태로 접근해도 로그인 화면으로 **리다이렉트되지 않습니다.** 대신 webview-code SSO를 자동 시도하는데, 브라우저(네이티브 앱 웹뷰가 아닌 환경)에서는 이 시도 자체가 스킵되므로 데이터가 비어 보이거나 API가 401을 반환할 수 있습니다(상세: `04-routing-architecture.md` 3장).
+- `(protected)` 화면은 미로그인 상태로 접근하면 httpOnly refresh 쿠키로 세션 복구를 조용히 시도하고, 실패하면 `/auth/login`으로 리다이렉트됩니다. 로그인 없이 UI만 먼저 확인하려면 `/dev/pub`의 목업 데이터를 활용하세요(상세: `04-routing-architecture.md` 3장).
 - `/dev/pub`를 통해 목업 데이터로 먼저 확인하거나, 개발자에게 테스트 계정을 요청합니다.
 
 ### 스타일이 적용되지 않는 경우

@@ -7,7 +7,7 @@
  *   백엔드(FastAPI)는 HTTPException(detail={...})를 {"detail": {...}}로 감싼다.
  *   따라서 code/message/fields가 detail 안에 중첩될 수 있다.
  *   이 헬퍼가 detail 중첩과 평탄 형태를 모두 수용해 apiClient·tokenRefresh·
- *   authService·fileUploadClient의 에러 생성을 한 곳으로 통일한다.
+ *   authApi·fileUploadClient의 에러 생성을 한 곳으로 통일한다.
  */
 
 import { ApiError } from '@/types/api';

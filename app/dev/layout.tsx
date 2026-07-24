@@ -1,25 +1,10 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import Link from 'next/link';
 
 export default function DevLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
-
-  // 네이티브 웹뷰에서는 dev 사이드바(검은 좌측 메뉴)를 숨긴다 — 앱 카드 화면은 풀스크린.
-  // 기본 숨김으로 두고, 브라우저(dev 허브)로 확인되면 표시한다(웹뷰에서 깜빡임 없음).
-  const [showSidebar, setShowSidebar] = useState(false);
-  useEffect(() => {
-    const isWebView =
-      typeof window !== 'undefined' &&
-      typeof (window as Window & { bridge?: unknown }).bridge !== 'undefined';
-    if (!isWebView) setShowSidebar(true);
-  }, []);
-
-  // 웹뷰: 사이드바 없이 페이지만 풀스크린으로 렌더
-  if (!showSidebar) {
-    return <>{children}</>;
-  }
 
   return (
     <div className="min-h-screen flex">
@@ -52,7 +37,6 @@ export default function DevLayout({ children }: { children: ReactNode }) {
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">도구</p>
               <Link href="/dev/ui"     className="block py-1 px-2 rounded hover:bg-gray-700">UI 카탈로그</Link>
-              <Link href="/dev/bridge" className="block py-1 px-2 rounded hover:bg-gray-700">Bridge 테스트</Link>
               <Link href="/dev/auth"   className="block py-1 px-2 rounded hover:bg-gray-700">인증 디버그</Link>
             </div>
           </div>

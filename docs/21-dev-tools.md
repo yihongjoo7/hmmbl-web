@@ -17,8 +17,7 @@
 | `/dev/pub` | 퍼블리셔 화면 | 목업 데이터로 View 컴포넌트 미리보기 |
 | `/dev/ui` | UI 컴포넌트 카탈로그 | 공통 컴포넌트·디자인 토큰 확인 |
 | `/dev/ref` | 코드 레퍼런스 | Page·View 작성 패턴·주석 가이드 |
-| `/dev/bridge` | Bridge 테스트 | 웹↔네이티브 이벤트 시나리오 테스트 |
-| `/dev/auth` | 인증 디버그 | 토큰 상태, 사용자 정보, AuthStore 확인(4장) |
+| `/dev/auth` | 인증 디버그 | 토큰 상태, 사용자 정보, AuthStore 확인(3장) |
 | `/dev/member-list` | 멤버목록 테스트 | `features/_templates/member/MemberListPage.tsx` re-export |
 | `/dev/campaign-test` | 캠페인 테스트(주문 목록 조회) | `features/_templates/campaign-test/CampaignTestPage.tsx` re-export |
 
@@ -74,49 +73,20 @@ export const IA_DATA: IAItem[] = [
 
 ---
 
-## 3. Bridge 테스트 도구 (`/dev/bridge`)
+## 3. 인증 디버그 도구 (`/dev/auth`)
 
-네이티브 앱 없이 Bridge 이벤트를 시뮬레이션합니다.
-
-```
-/dev/bridge
-  ├── web-to-native/    ← window.bridge 메서드 직접 호출 테스트 (단일 페이지)
-  ├── native-to-web/    ← window.onBridgeEvent 이벤트 수동 발행 테스트 (단일 페이지)
-  ├── scenario/         ← 시나리오별 이벤트 시퀀스 실행 (native-to-web의 하위가 아니라 별도 최상위 경로)
-  │   ├── auth/, bio-auth/, pin-auth/, key-rotation/, token-storage/
-  │   ├── gps/, image-upload/, video-handoff/, video-tracking/
-  │   ├── back-event/, locale-change/
-  ├── file-upload-test/ ← 파일 업로드 단독 테스트
-  └── full-test/        ← 통합 테스트
-```
-
-개발 서버에서 `window.onBridgeEvent`를 콘솔에서 직접 호출해 이벤트를 시뮬레이션할 수도 있습니다.
-
-```js
-// 브라우저 콘솔에서 GPS 이벤트 시뮬레이션
-window.onBridgeEvent('gpsResult', { latitude: 37.5665, longitude: 126.9780, accuracy: 10 });
-
-// 인증 코드 이벤트 시뮬레이션
-window.onBridgeEvent('appAuthCode', { code: 'test-auth-code-12345' });
-```
-
----
-
-## 4. 인증 디버그 도구 (`/dev/auth`)
-
-로그인 없이 개발할 때 또는 인증 흐름을 디버깅할 때 사용합니다.  
-마운트 시 `appAuthCode` 이벤트를 구독하고 `window.bridge?.requestAuthCode()`를 호출해 자동으로 인증을 시도합니다.
+로그인 상태를 확인하거나 인증 흐름을 디버깅할 때 사용합니다. 실제 로그인은 `/auth/login`에서 합니다.
 
 - **로그인 상태 / 사용자 정보**: `useAuthStore`의 `isAuthenticated`·`user`(id/이름/이메일/역할/프로필 이미지) 실시간 확인
 - **Access Token**: `getAccessToken()`으로 조회한 현재 토큰 값 표시(토큰 값 자체이며, 만료 시간 표시는 없음)
 - **Refresh 버튼**: `POST /auth/refresh`를 DPoP proof와 함께 직접 호출해 토큰을 갱신하고 `setAuth`로 반영
-- **Logout 버튼**: `useAuth().logout()` 호출(webview 모드: 서버 로그아웃 + 네이티브 알림 + DPoP 키 삭제 + 상태 초기화)
+- **Logout 버튼**: `useAuth().logout()` 호출(서버 로그아웃 + DPoP 키 삭제 + 상태 초기화)
 
 ⚠️ DPoP 키쌍(IndexedDB) 존재 여부·공개키를 직접 보여주는 UI는 없습니다.
 
 ---
 
-## 5. UI 컴포넌트 카탈로그 (`/dev/ui`)
+## 4. UI 컴포넌트 카탈로그 (`/dev/ui`)
 
 공통 컴포넌트의 모든 variant·size·상태를 확인합니다.
 
@@ -134,7 +104,7 @@ window.onBridgeEvent('appAuthCode', { code: 'test-auth-code-12345' });
 
 ---
 
-## 6. 코드 레퍼런스 (`/dev/ref`)
+## 5. 코드 레퍼런스 (`/dev/ref`)
 
 ```
 /dev/ref
@@ -147,7 +117,7 @@ window.onBridgeEvent('appAuthCode', { code: 'test-auth-code-12345' });
 
 ---
 
-## 7. 로컬 환경 설정
+## 6. 로컬 환경 설정
 
 ### 기본은 HTTP
 
@@ -193,7 +163,7 @@ ALLOWED_DEV_ORIGINS=192.168.1.100  # 개발 PC IP
 
 ---
 
-## 8. 개발 서버 재시작이 필요한 경우
+## 7. 개발 서버 재시작이 필요한 경우
 
 다음 파일을 변경하면 `Ctrl+C` 후 `npm run dev`로 재시작합니다.
 
@@ -204,7 +174,7 @@ ALLOWED_DEV_ORIGINS=192.168.1.100  # 개발 PC IP
 
 ---
 
-## 9. 프로덕션 빌드 체크
+## 8. 프로덕션 빌드 체크
 
 ```bash
 # 타입 체크

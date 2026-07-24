@@ -1,7 +1,7 @@
 /**
  * 메모리 기반 토큰 캐시
  *
- * WebView 환경에서 Authorization Code → Access Token 교환 중
+ * Authorization Code → Access Token 교환 중
  * 단일 비행(in-flight) 요청을 관리합니다.
  */
 

@@ -8,8 +8,7 @@
  *   - 이후: configureFileUploadClient()로 getter·401 콜백을 주입 받음
  *           features/ 레이어 의존 완전 제거
  *
- * 2-Lite: 업로드도 fetch/XHR을 웹이 직접 수행한다. DPoP proof 서명 주체만
- * 모드에 따라 갈아끼운다(getDPoPHeader).
+ * 업로드는 fetch/XHR을 웹이 직접 수행하며, DPoP proof도 웹 키로 서명한다(getDPoPHeader).
  *
  * 초기화 방법:
  *   features/auth/hooks/useAuthInterceptor.ts에서

@@ -1,23 +1,22 @@
 # 프로젝트 구조 및 레이어 아키텍처
 
 > 대상: 개발자  
-> 이 문서는 hmmbl-web 프로젝트의 전체 디렉토리 구조와 레이어 간 의존성 규칙을 설명합니다.
+> 이 문서는 hmfrnt-web 프로젝트의 전체 디렉토리 구조와 레이어 간 의존성 규칙을 설명합니다.
 
 ---
 
 ## 1. 디렉토리 구조
 
 ```
-hmmbl-web/
+hmfrnt-web/
 ├── app/                        # Next.js App Router 라우트
-│   ├── (protected)/            # webview SSO 부트스트랩 라우트 그룹 (인증 리다이렉트 없음)
-│   ├── (public)/                # 부트스트랩 없는 라우트 그룹
+│   ├── (protected)/            # 인증 부트스트랩 라우트 그룹 (미인증 시 /auth/login 리다이렉트)
+│   ├── (public)/                # 부트스트랩 없는 라우트 그룹 (로그인 포함)
 │   ├── api/                    # Route Handler
-│   ├── dev/                    # 개발 도구 (ia / pub / ui / ref / auth / bridge 등)
-│   ├── blocked/                 # WebView UA 게이트 차단 안내 페이지
+│   ├── dev/                    # 개발 도구 (ia / pub / ui / ref / auth 등)
 │   ├── layout.tsx              # 루트 레이아웃
 │   ├── providers.tsx           # QueryClient / Toast 등 전역 Provider
-│   ├── WebviewLayoutClient.tsx # 인증 인터셉터·키 로테이션·토큰 수신 훅 마운트
+│   ├── WebviewLayoutClient.tsx # 인증 인터셉터 훅 마운트
 │   ├── LocaleProvider.tsx      # i18n 로케일 provider
 │   └── global-error.tsx        # 전역 에러 바운더리
 │
@@ -42,16 +41,9 @@ hmmbl-web/
 │   │   ├── apiClient.ts        # DPoP 인증 클라이언트
 │   │   └── fileUploadClient.ts # 파일 업로드 클라이언트
 │   ├── auth/                   # 인증 인프라
-│   │   ├── dpop/               # DPoP 키쌍·Proof 생성 (proofProvider.ts: 모드별 서명 주체 분기)
-│   │   ├── token/              # 토큰 캐시·갱신
-│   │   └── authService.ts      # Authorization Code 교환
-│   ├── bridge/                 # Native Bridge
-│   │   ├── bridgeClient.ts     # 이벤트 버스·화이트리스트
-│   │   ├── bridgeActions.ts    # 네이티브 기능 래퍼 함수 (requestNativeToken 포함, 32-auth-dpop-internals.md 7장)
-│   │   ├── bridgeProtocol.ts   # Bridge 프로토콜 타입
-│   │   ├── appVersion.ts       # 앱 버전 캐시·비교
-│   │   ├── bridgeEventBus.ts, bridge.ts, bridgeErrorCodes.ts # 하위 호환 re-export
-│   │   └── index.ts            # Public API barrel
+│   │   ├── dpop/               # DPoP 키쌍·Proof 생성 (proofGenerator.ts: ES256 서명, proofProvider.ts: apiClient 진입점)
+│   │   ├── token/               # 토큰 캐시·쿠키 기반 갱신
+│   │   └── interceptor.ts      # 401 재시도 조율
 │   ├── config/                 # 환경변수·설정 접근
 │   ├── i18n/                   # next-intl 설정·헬퍼
 │   ├── logger/                 # 서버 로깅
@@ -75,7 +67,6 @@ hmmbl-web/
 │
 ├── types/                      # 전역 타입 정의
 │   ├── api.ts                  # ApiResponse, ApiError 등
-│   ├── bridge.ts               # NativeBridge 인터페이스
 │   └── errors.ts               # ErrorCode 상수
 │
 ├── styles/
@@ -114,14 +105,14 @@ hmmbl-web/
 
 | 레이어 | 허용 | 금지 |
 |---|---|---|
-| `lib/` | `types/`, fetch API, WebCrypto, IndexedDB | `features/`, `hooks/`, bridge 직접 import, Zustand |
+| `lib/` | `types/`, fetch API, WebCrypto, IndexedDB | `features/`, `hooks/`, Zustand |
 | `components/common/ui/` | `lib/utils/`, Tailwind | `features/`, `hooks/`, API 호출 |
 | `features/` | `lib/`, `components/`, `hooks/`, `types/` | 다른 feature 직접 import (shared 경유) |
 | `app/` | 모든 레이어 | — |
 
 ### `lib/` 순수성 규칙 (핵심)
 
-`lib/`는 bridge·Zustand·React에 의존하지 않습니다.  
+`lib/`는 Zustand·React에 의존하지 않습니다.  
 외부 동작이 필요한 경우 **콜백 DI(Dependency Injection)** 패턴으로 주입받습니다.
 
 ```ts

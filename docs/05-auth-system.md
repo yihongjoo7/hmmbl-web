@@ -2,39 +2,36 @@
 
 > 대상: 개발자  
 > 인증 흐름 개요, Zustand AuthStore 사용법, 로그아웃 호출법을 다룹니다.  
-> DPoP 키 관리·Proof 생성, 토큰 캐시·갱신, apiClient DI 연결 등 내부 구현과 webview/native 모드 전환 상세는 관리자 문서 참고: [32-auth-dpop-internals.md](./32-auth-dpop-internals.md)
+> DPoP 키 관리·Proof 생성, 토큰 캐시·갱신, apiClient DI 연결 등 내부 구현 상세는 관리자 문서 참고: [31-auth-dpop-internals.md](./31-auth-dpop-internals.md)
 
 ---
 
-## 1. 인증 흐름 개요 (webview 모드)
+## 1. 인증 흐름 개요
 
-이 앱은 Native WebView 환경에서 동작합니다.  
-네이티브 앱이 사용자 인증을 담당하고, 웹에서는 네이티브로부터 Authorization Code를 받아 Access Token으로 교환합니다.
+이메일/비밀번호로 로그인하고, 액세스 토큰은 메모리에만 보관합니다(새로고침 시 소실). 갱신은 로그인 시 발급되는 httpOnly refresh 쿠키로 조용히 수행됩니다.
 
 ```
-네이티브 앱 로그인
+/auth/login (이메일/비밀번호 입력)
       │
       ▼
-bridge.requestAuthCode()          ← 웹에서 네이티브로 코드 요청
+authApi.login(email, password)     ← POST /auth/login + DPoP Proof
       │
       ▼
-appAuthCode 이벤트 수신            ← 네이티브 → 웹 (1회성 코드)
+Access Token + User 정보 수신        (refresh 토큰은 httpOnly 쿠키로 별도 수신)
       │
       ▼
-initAuthFromCode(code, setAuth)   ← POST /auth/token + DPoP Proof
+useAuthStore.setAuth(user, token)  ← Zustand 저장
       │
       ▼
-Access Token + User 정보 수신
-      │
-      ▼
-useAuthStore.setAuth(user, token) ← Zustand 저장
-      │
-      ▼
-tokenCache.set(token, expiresIn)  ← 메모리 캐시
+tokenCache.set(token, expiresIn)   ← 메모리 캐시
       │
       ▼
 apiClient 이후 요청에서 자동 사용
 ```
+
+**세션 복구(새로고침 등):** `(protected)/layout.tsx`가 마운트 시 `isAuthenticated`가 false면 httpOnly refresh 쿠키로 `POST /auth/refresh`를 호출해 조용히 세션을 복구합니다. 실패하면 `/auth/login?redirect=<원래 경로>`로 리다이렉트합니다.
+
+**401 재시도:** API 호출 중 401이 오면 `lib/auth/interceptor.ts`가 동일한 `/auth/refresh` 흐름으로 토큰을 갱신한 뒤 요청을 재시도합니다.
 
 ---
 
@@ -63,7 +60,7 @@ getAccessToken(); // 모듈 레벨 변수 — apiClient의 동기 getToken으로
 
 | 액션 | 설명 |
 |---|---|
-| `setAuth(user, token)` | 로그인 완료 시 상태 저장 (webview·native 공통, 상세: `32-auth-dpop-internals.md` 7장) — `_accessToken` 갱신 |
+| `setAuth(user, token)` | 로그인 완료 시 상태 저장 — `_accessToken` 갱신 |
 | `clearAuth()` | 로그아웃 시 상태·토큰 캐시 초기화 |
 | `setInitialized()` | 부트스트랩 완료 표시 |
 
@@ -77,9 +74,8 @@ getAccessToken(); // 모듈 레벨 변수 — apiClient의 동기 getToken으로
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const { logout } = useAuth();
-await logout(); // 서버 로그아웃 → 네이티브 알림 → 키·상태 초기화 → 로그인 화면 이동
+await logout(); // 서버 로그아웃 → 키·상태 초기화 → /auth/login 이동
 ```
 
-내부적으로 서버 로그아웃 요청, DPoP 키쌍 삭제, Zustand 상태 초기화, `/auth/simple`로 이동까지 순서대로 처리됩니다(webview·native 모드에 따라 세부 단계 차이 있음).  
-로그아웃은 네이티브 이벤트(예: 세션 만료 알림)로도 트리거될 수 있습니다. Bridge 이벤트 처리는 `08-bridge-guide.md`를 참고하세요.  
-내부 구현 상세는 `32-auth-dpop-internals.md` 6장을 참고하세요.
+내부적으로 서버 로그아웃 요청(`POST /auth/logout`), DPoP 키쌍 삭제, Zustand 상태 초기화, `/auth/login`으로 이동까지 순서대로 처리됩니다.  
+내부 구현 상세는 `31-auth-dpop-internals.md` 6장을 참고하세요.

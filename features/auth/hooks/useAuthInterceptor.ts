@@ -5,7 +5,7 @@
  * API 클라이언트 ↔ 인증 인터셉터 연결 훅
  *
  * 역할:
- *   lib 레이어(apiClient, fileUploadClient)는 bridge·Zustand에 의존하지 않도록
+ *   lib 레이어(apiClient, fileUploadClient)는 Zustand에 의존하지 않도록
  *   설계되어 있다. 이 훅이 features 레이어에서 필요한 콜백을 주입(DI)한다.
  *
  * 주입 흐름:
@@ -37,11 +37,11 @@ export function useAuthInterceptor(): void {
 
   useEffect(() => {
     // 1. onUnauthorized 콜백 생성
-    //    bridge에서 인가 코드 수신 → 토큰 갱신 → setAuth 호출의 전체 플로우를 담당
+    //    httpOnly refresh 쿠키로 토큰 갱신 → setAuth 호출의 전체 플로우를 담당
     const onUnauthorized = createAuthInterceptor((token, user) => setAuth(user as User, token));
 
     // 2. apiClient에 콜백 주입
-    //    이제부터 apiClient는 bridge·Zustand를 직접 import하지 않고
+    //    이제부터 apiClient는 Zustand를 직접 import하지 않고
     //    이 콜백들을 통해서만 인증 정보에 접근한다
     configureApiClient({
       getToken:       getAccessToken,   // 동기 토큰 getter (module-level 변수)

@@ -1,12 +1,12 @@
 # 퍼블리셔 · 개발자 역할과 책임
 
-> 이 문서는 hmmbl-web 프로젝트에서 퍼블리셔와 개발자의 역할 경계, 책임 범위, 기대 수준을 명확하게 정의합니다.
+> 이 문서는 hmfrnt-web 프로젝트에서 퍼블리셔와 개발자의 역할 경계, 책임 범위, 기대 수준을 명확하게 정의합니다.
 
 ---
 
 ## 1. 개요
 
-hmmbl-web은 **Page / View 분리 패턴**을 기반으로 UI 담당(퍼블리셔)과 로직 담당(개발자)을 분리합니다.  
+hmfrnt-web은 **Page / View 분리 패턴**을 기반으로 UI 담당(퍼블리셔)과 로직 담당(개발자)을 분리합니다.  
 두 역할은 독립적으로 작업하되, PR 리뷰와 Props 인터페이스 협의를 통해 협력합니다.
 
 ```
@@ -97,7 +97,6 @@ if (items.length === 0) {
 - `fetch` / `apiClient` / React Query 직접 호출
 - `useRouter` / `useParams` 사용 (라우팅은 Page 담당)
 - 하드코딩 색상값 사용 (반드시 CSS 변수 토큰 사용)
-- `window.bridge` 직접 접근
 - Zustand Store 직접 import (`useAuthStore`, `useToastStore` 등)
 
 ### 2-5. 공통 컴포넌트 작성 책임
@@ -140,7 +139,7 @@ View에 올바른 데이터를 전달하고, 앱이 안전하고 안정적으로
 |---|---|---|
 | `features/*/[screen]/*Page.tsx` | **전담** | 데이터 페칭·라우팅 컨테이너 |
 | `app/**/page.tsx` | **전담** | Next.js 라우트 파일 생성 |
-| `lib/` | **전담** | 인프라 레이어 (API 클라이언트, 인증, Bridge, 유틸) |
+| `lib/` | **전담** | 인프라 레이어 (API 클라이언트, 인증, 유틸) |
 | `hooks/` | **전담** | 전역 Zustand Store |
 | `proxy.ts` | **전담** | 보안 헤더, CSP, 인증 미들웨어 |
 | `next.config.mjs` | **전담** | 빌드 설정, 이미지 도메인, 허용 오리진 |
@@ -185,22 +184,20 @@ export function MissionPage() {
 
 ### 3-4. 인프라 레이어(`lib/`) 관리 책임
 
-`lib/` 레이어는 bridge·Zustand·React에 의존하지 않아야 합니다.  
+`lib/` 레이어는 Zustand·React에 의존하지 않아야 합니다.  
 이 원칙을 유지하는 것은 개발자의 책임입니다.
 
 - `apiClient`: DPoP 인증 헤더 생성, 401 재시도 로직, 콜백 DI 유지
 - `fileUploadClient`: 파일 검증, 업로드, 진행률 콜백
-- `lib/auth/`: DPoP 키쌍 관리, 토큰 캐시, Authorization Code 교환
-- `lib/bridge/`: 이벤트 버스, 화이트리스트, 네이티브 액션 래퍼, 버전 호환성
+- `lib/auth/`: DPoP 키쌍 관리, 토큰 캐시, httpOnly 쿠키 기반 토큰 갱신
 - `lib/utils/`: 에러 메시지 상수, 폼 에러 매핑
 
 ### 3-5. 보안 책임
 
 | 영역 | 내용 |
 |---|---|
-| CSP | `proxy.ts`가 프로덕션 CSP용 nonce를 자동 생성(개발자가 직접 다룰 일 없음). 인라인 스크립트·스타일은 원칙적으로 금지되며, nonce 적용은 필수가 아닌 선택 사항(부득이하게 인라인 요소가 필요한 예외 상황에서만 사용, 관리자 문서 `31-security-infrastructure.md` 1장) |
+| CSP | `proxy.ts`가 프로덕션 CSP용 nonce를 자동 생성(개발자가 직접 다룰 일 없음). 인라인 스크립트·스타일은 원칙적으로 금지되며, nonce 적용은 필수가 아닌 선택 사항(부득이하게 인라인 요소가 필요한 예외 상황에서만 사용, 관리자 문서 `30-security-infrastructure.md` 1장) |
 | DPoP | 요청마다 새 Proof JWT 생성. 키쌍은 IndexedDB에만 보관 |
-| Bridge 화이트리스트 | `ALLOWED_EVENTS`에 등록된 이벤트만 처리. 신규 이벤트 추가 시 페이로드 검증기도 함께 작성 |
 | 이미지 도메인 | `next.config.mjs`의 `remotePatterns`에 명시적으로 등록된 도메인만 허용 |
 | 환경변수 | `NEXT_PUBLIC_` 접두어 있는 변수만 클라이언트에 노출. 시크릿 값은 서버 전용 |
 
@@ -273,7 +270,6 @@ View와 Page를 연결하는 Props는 두 역할이 함께 설계합니다.
 | View에서 useRouter 사용 | 금지 | — |
 | `package.json` 직접 수정 | 금지 (개발자에게 요청) | — |
 | `proxy.ts` 수정 | 금지 | — |
-| `ALLOWED_EVENTS` 무단 추가 | 금지 | 추가 시 검증기 함께 작성 필수 |
 | `.env.local` 커밋 | **양쪽 모두 금지** | **양쪽 모두 금지** |
 
 ---
@@ -286,7 +282,6 @@ View와 Page를 연결하는 Props는 두 역할이 함께 설계합니다.
 | 데이터 페칭 | — | ✅ 전담 |
 | API 서비스 함수 작성 | — | ✅ 전담 |
 | 인증·보안 인프라 | — | ✅ 전담 |
-| Native Bridge 연동 | — | ✅ 전담 |
 | 공통 UI 컴포넌트 | ✅ 주도 | 리뷰 |
 | Props 인터페이스 확정 | 초안 | ✅ 최종 확정 |
 | 로딩·에러·빈 상태 구현 | ✅ 전담 | — |

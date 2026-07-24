@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuthStore, getAccessToken } from '@/features/auth/hooks/useAuthStore';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { createDPoPProof } from '@/lib/auth/dpop/proofGenerator';
-import { initAuthFromCode } from '@/lib/auth/authService';
-import { bridgeEventBus } from '@/lib/bridge/bridgeEventBus';
 import { config } from '@/lib/config';
 import type { AuthResponse } from '@/features/auth/types';
 
@@ -14,19 +12,6 @@ export default function AuthDevPage() {
   const setAuth         = useAuthStore((s) => s.setAuth);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { logout }      = useAuth();
-
-  useEffect(() => {
-    const unsub = bridgeEventBus.on<{ code: string }>('appAuthCode', async (data) => {
-      const code = typeof data === 'object' && data !== null
-        ? (data as Record<string, unknown>).code
-        : null;
-      if (typeof code !== 'string') return;
-      await initAuthFromCode(code, setAuth);
-    });
-    window.bridge?.requestAuthCode();
-    return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const [refreshStatus, setRefreshStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [logoutStatus,  setLogoutStatus]  = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');

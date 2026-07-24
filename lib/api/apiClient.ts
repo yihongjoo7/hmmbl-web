@@ -4,29 +4,19 @@
  * HTTP API 클라이언트 (DPoP 인증)
  *
  * 리팩토링 (P1: lib 레이어 순수화):
- *   - 이전: bridgeEventBus + useAuthStore를 직접 import (레이어 위반)
+ *   - 이전: useAuthStore를 직접 import (레이어 위반)
  *   - 이후: 401 처리·토큰 조회를 콜백으로 주입받음
- *           bridge/Zustand 의존 완전 제거
+ *           Zustand 의존 완전 제거
  *
  * 책임:
- *   - DPoP proof 자동 첨부 (buildHeaders) — 서명 주체는 모드별로 다름(getDPoPHeader)
+ *   - DPoP proof 자동 첨부 (buildHeaders, getDPoPHeader — 웹 키로 서명)
  *   - 401 시 onUnauthorized 콜백 호출 → 새 토큰 수신 후 재시도
  *   - 동시 401 대기(pendingQueue)는 lib/auth/interceptor.ts가 담당
- *
-<<<<<<< HEAD
- * 2-Lite (docs/30-dpop-mode-switch-proposal.md):
-=======
- * 2-Lite (docs/21-dpop-mode-switch-proposal.md):
->>>>>>> d7f5d08095fee6c85b4316650c7ef0b3797f4fda
- *   fetch는 webview/native 두 모드 모두 웹이 직접 수행한다. 달라지는 것은 DPoP
- *   proof의 서명 주체뿐이다(getDPoPHeader가 모드에 따라 웹 키 또는 네이티브
- *   KeyStore를 선택). 토큰은 두 모드 모두 _getToken()으로 동일하게 조회한다
- *   (webview=코드교환 토큰, native=네이티브가 tokenReceived로 푸시한 토큰).
  *
  * 의존:
  *   lib/auth/dpop/proofProvider (OK — lib→lib)
  *   onUnauthorized 콜백 (주입, 역방향 없음)
- * 비의존: bridge, Zustand, React
+ * 비의존: Zustand, React
  *
  * 초기화 방법:
  *   features/auth/hooks/useAuthInterceptor.ts에서
@@ -87,7 +77,7 @@ export function configureApiClient(cfg: {
  * 비보안 컨텍스트 throw를 피하고, 공개 엔드포인트는 어차피 DPoP를 무시한다.
  *
  * - Authorization: DPoP <access_token>
- * - DPoP: <proof_jwt>   (매 요청마다 신규 생성, RFC 9449. webview=웹 키, native=네이티브 KeyStore)
+ * - DPoP: <proof_jwt>   (매 요청마다 신규 생성, RFC 9449, 웹 키로 서명)
  */
 async function buildHeaders(url: string, method: string): Promise<HeadersInit> {
   // 주입된 getter로 현재 토큰 조회 (동기, Zustand 미구독)

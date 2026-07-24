@@ -3,7 +3,7 @@
 /**
  * app/LocaleProvider.tsx
  *
- * 다국어 Provider (WebView 전용)
+ * 다국어 Provider
  *
  * WebviewLayoutClient에서 dynamic({ ssr:false })로 로드되므로 서버 렌더링이
  * 비활성화된다 → 서버(기본 locale) vs 클라이언트(쿠키 locale) 초기값 불일치로
@@ -15,11 +15,8 @@
  *   - 동적(ja·th·vi·ms): /api/messages?locale=xx (서버 Azure 번역 + 캐시) fetch
  *     → 첫 렌더는 영어 fallback, 완료 후 교체(스피너). 비동기 특성상 의도된 동작.
  *
- * 언어 변경(브리지 이벤트):
- *   - 'appLanguage'(초기 1회) → 즉시 적용
- *   - 'appLanguageChanged'(변경) → 쿠키 갱신 후 전체 새로고침
- *
- * 쿠키: HPOINT_LOCALE (네이티브가 설정, 웹은 폴백/동기화)
+ * 쿠키: HPOINT_LOCALE — 언어 전환 UI가 추가되면 쿠키 설정 후 새로고침하는 방식으로
+ * 연결한다(현재는 언어 전환 진입점 없음, 쿠키 없으면 기본값 사용).
  */
 
 import { ReactNode, useEffect, useState } from 'react';
@@ -28,7 +25,6 @@ import koMessages from '@/messages/ko.json';
 import zhMessages from '@/messages/zh.json';
 import { NextIntlClientProvider } from 'next-intl';
 import { HtmlLang } from '@/components/common/HtmlLang';
-import { bridgeEventBus } from '@/lib/bridge/bridgeEventBus';
 import { defaultLocale, supportedLocales, type Locale } from '@/lib/i18n/config';
 
 // 정적 JSON이 없는 locale — /api/messages?locale=xx 로 서버 번역본을 가져온다.
@@ -43,39 +39,12 @@ const STATIC_MESSAGES: Record<string, Record<string, unknown>> = {
   zh: zhMessages,
 };
 
-function setLocaleCookie(locale: string): void {
-  document.cookie = [
-    'HPOINT_LOCALE=' + encodeURIComponent(locale),
-    'path=/',
-    'Secure',
-    'SameSite=Strict',
-    'Max-Age=31536000', // 1년
-  ].join('; ');
-}
-
 function getLocaleCookie(): Locale {
   if (typeof document === 'undefined') return defaultLocale;
   const match = document.cookie.match(/(?:^|;\s*)HPOINT_LOCALE=([^;]+)/);
   const raw   = match ? decodeURIComponent(match[1]) : defaultLocale;
   return (supportedLocales as readonly string[]).includes(raw)
     ? (raw as Locale)
-    : defaultLocale;
-}
-
-// 네이티브 이벤트 페이로드에서 locale 추출 — { locale } 또는 { language } 또는 문자열.
-function extractLocale(payload: unknown): string | null {
-  if (typeof payload === 'string') return payload;
-  if (typeof payload === 'object' && payload !== null) {
-    const p = payload as Record<string, unknown>;
-    const loc = p.locale ?? p.language;
-    return typeof loc === 'string' ? loc : null;
-  }
-  return null;
-}
-
-function toSafeLocale(loc: string): Locale {
-  return (supportedLocales as readonly string[]).includes(loc)
-    ? (loc as Locale)
     : defaultLocale;
 }
 
@@ -101,7 +70,7 @@ async function loadMessages(loc: string): Promise<Record<string, unknown>> {
 export default function LocaleProvider({ children }: { children: ReactNode }) {
   // ssr:false 로 로드되므로 첫 렌더 전 브라우저 환경이 보장된다.
   // lazy initializer로 쿠키 locale을 첫 렌더 전 동기 선택 → 플리커/hydration 에러 없음.
-  const [locale, setLocale] = useState<Locale>(getLocaleCookie);
+  const [locale] = useState<Locale>(getLocaleCookie);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [messages, setMessages] = useState<any>(() => {
@@ -120,52 +89,6 @@ export default function LocaleProvider({ children }: { children: ReactNode }) {
       setMessages(msgs);
       setMessagesLoading(false);
     });
-  }, []);
-
-  // 브리지 언어 이벤트 구독
-  useEffect(() => {
-    function applyLocale(loc: string): void {
-      const safeLoc = toSafeLocale(loc);
-      setLocaleCookie(safeLoc);
-      setLocale(safeLoc);
-      if (STATIC_MESSAGES[safeLoc]) {
-        // 정적 locale: 번들 메시지를 즉시 동기 교체 — 추가 fetch 불필요
-        setMessages(STATIC_MESSAGES[safeLoc]);
-      } else {
-        // 동적 locale: /api/messages Azure 번역 호출
-        setMessagesLoading(true);
-        void loadMessages(safeLoc).then((msgs) => {
-          setMessages(msgs);
-          setMessagesLoading(false);
-        });
-      }
-    }
-
-    // 초기 언어 수신
-    const unsubAppLanguage = bridgeEventBus.on<{ locale: string }>(
-      'appLanguage',
-      (data) => {
-        const loc = extractLocale(data);
-        if (loc) applyLocale(loc);
-      },
-    );
-
-    // 언어 변경 → 전체 새로고침으로 처리(서버 컴포넌트 re-fetch 포함)
-    const unsubLanguageChanged = bridgeEventBus.on<{ locale: string }>(
-      'appLanguageChanged',
-      (data) => {
-        const loc = extractLocale(data);
-        if (loc) {
-          setLocaleCookie(loc);
-          window.location.reload();
-        }
-      },
-    );
-
-    return () => {
-      unsubAppLanguage();
-      unsubLanguageChanged();
-    };
   }, []);
 
   return (

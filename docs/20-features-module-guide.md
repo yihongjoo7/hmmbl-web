@@ -82,7 +82,6 @@ features/[domain]/
 | 컴포넌트 | 역할 |
 |---|---|
 | `AudioPlayer` | 오디오 재생 UI (재생/일시정지/탐색) |
-| `InAppWebView` | 앱 내 WebView 컨테이너 (`bridge.openExternalBrowser` 연동 포함) |
 | `ImageAttachment` | 이미지 첨부 미리보기 + 삭제 UI |
 | `ImagePicker` | 카메라/갤러리 선택 바텀시트 + `useCameraCapture` 연동 |
 | `MapView` | 지도 뷰 (제휴처 지도 등에서 사용) |
@@ -113,64 +112,16 @@ features/[domain]/
 
 ## 4. features/shared/hooks/ 목록
 
-### Bridge 관련 훅
-
-**`useBridgeEvent(eventName, handler)`**
-
-Bridge 이벤트를 구독하는 기본 훅입니다.  
-컴포넌트 unmount 시 자동으로 구독 해제됩니다.
-
-```ts
-import { useBridgeEvent } from '@/features/shared/hooks/useBridgeEvent';
-
-useBridgeEvent('appBackPressed', () => {
-  if (canGoBack) router.back();
-  else closeWebView();
-});
-```
-
-**`useAndroidBackPress(handler, enabled?)`**
-
-Android 백 버튼 이벤트 전용 훅입니다.  
-`useBridgeEvent('appBackPressed', ...)`의 편의 래퍼입니다.
-
-```ts
-import { useAndroidBackPress } from '@/features/shared/hooks/useAndroidBackPress';
-
-useAndroidBackPress(() => {
-  if (isModalOpen) closeModal();
-  else router.back();
-}, true); // enabled 기본값: true
-```
-
-**`useAppUpdate()`**
-
-앱 업데이트 이벤트를 수신하고 업데이트 정보를 반환합니다.
-
-```ts
-import { useAppUpdate } from '@/features/shared/hooks/useAppUpdate';
-
-const { updateInfo, dismiss } = useAppUpdate();
-// updateInfo: { type: 'force' | 'optional', version, storeUrl, message? } | null
-// dismiss: 선택적 업데이트 닫기 (강제 업데이트는 dismiss 불가)
-```
-
-| 이벤트 | `type` | dismiss 가능 |
-|---|---|---|
-| `appUpdateRequired` | `'force'` | ❌ |
-| `appUpdateAvailable` | `'optional'` | ✅ |
-
 ### 미디어·하드웨어 훅
 
 **`useCameraCapture()`**
 
-카메라/갤러리에서 이미지를 캡처해 `File` 객체로 반환합니다.  
-웹뷰가 아닌 환경에서는 `<input type="file">`로 폴백합니다.
+카메라/갤러리에서 이미지를 캡처해 `File` 객체로 반환합니다(`<input type="file">` 기반).
 
 ```ts
 const { capture, isCapturing, error } = useCameraCapture();
 
-// 카메라 촬영
+// 카메라 촬영 (capture=environment 힌트)
 const file = await capture('camera');
 
 // 갤러리 선택
@@ -179,8 +130,7 @@ const file = await capture('gallery');
 
 **`useLocation()`**
 
-GPS 위치 요청 훅입니다.  
-웹뷰이면 네이티브 GPS, 아니면 `navigator.geolocation`으로 자동 분기합니다.
+GPS 위치 요청 훅입니다. `navigator.geolocation` 기반입니다.
 
 ```ts
 const { location, isLoading, error, requestLocation } = useLocation();
@@ -189,31 +139,11 @@ await requestLocation();
 // location: { latitude, longitude, accuracy } | null
 ```
 
-**`useStepCount()`**
-
-Android Health Connect 기반 걸음수 조회 훅입니다.
-
-```ts
-const { steps, date, isLoading, error, fetchStepCount } = useStepCount();
-
-await fetchStepCount('2024-01-15');  // date 생략 시 오늘
-// steps: number | null
-```
-
-에러 코드 매핑:
-
-| 코드 | 메시지 |
-|---|---|
-| `HEALTH_PERMISSION_DENIED` | 건강 데이터 접근 권한이 없습니다. |
-| `HEALTH_NOT_AVAILABLE` | 이 기기에서 Health Connect를 사용할 수 없습니다. |
-| `HEALTH_DATA_UNAVAILABLE` | 해당 날짜의 걸음수 데이터가 없습니다. |
-
 ### UI 인터랙션 훅
 
 **`useHaptic()`**
 
-햅틱 피드백 훅입니다.  
-웹뷰가 아닌 환경에서는 `navigator.vibrate`로 폴백합니다.
+햅틱 피드백 훅입니다. `navigator.vibrate` 기반입니다(미지원 브라우저에서는 무동작).
 
 ```ts
 const { trigger, light, medium, heavy } = useHaptic();
@@ -226,7 +156,7 @@ heavy();   // 50ms — 에러, 삭제 확인
 **`useCopyToClipboard()`**
 
 클립보드 복사 훅입니다.  
-bridge → `navigator.clipboard` → `execCommand` 순서로 3단 폴백합니다.  
+`navigator.clipboard` → `execCommand` 순서로 폴백합니다.  
 성공 시 햅틱 피드백(light)이 자동 실행됩니다.
 
 ```ts

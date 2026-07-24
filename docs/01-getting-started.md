@@ -1,6 +1,6 @@
 # 개발 시작 가이드 (Step-by-Step)
 
-> 대상: hmmbl-web에 새로 합류하는 개발자  
+> 대상: hmfrnt-web에 새로 합류하는 개발자  
 > 목적: 로컬 환경 설정부터 첫 화면(기능) 개발·PR 제출까지 전체 흐름을 순서대로 안내합니다.  
 > 이 문서는 기존 `docs/` 문서들의 진입점(entry point) 역할을 합니다.  
 > 각 단계 끝에 더 깊은 내용을 다루는 문서를 링크해 두었으니, 필요할 때 펼쳐서 참고하세요.
@@ -9,9 +9,9 @@
 
 ## 0. 시작 전에 — 이 프로젝트는 무엇인가
 
-- Next.js 14 (App Router) 기반 **모바일 웹뷰 전용** 앱입니다. 네이티브 앱(iOS/Android)이 WebView로 이 앱을 감싸서 서비스합니다.
+- Next.js 14 (App Router) 기반 **순수 웹** 앱입니다.
 - 화면 작업은 **Page(개발자) / View(퍼블리셔)** 두 레이어로 분리되어 있습니다. 이 문서는 개발자 관점에서 작성되었습니다. 퍼블리셔 관점은 [13-page-view-pattern.md](./13-page-view-pattern.md)를 참고하세요.
-- 인증은 네이티브 앱이 담당하고, 웹은 DPoP(RFC 9449) 기반으로 API를 호출합니다. 처음에는 "왜 로그인 리다이렉트가 없지?" 하고 헷갈릴 수 있는데, Step 7에서 다룹니다.
+- 로그인은 이메일/비밀번호 폼(`/auth/login`)으로 처리하고, 웹은 DPoP(RFC 9449) 기반으로 API를 호출합니다. 자세한 흐름은 Step 7에서 다룹니다.
 
 ### 사전 준비물
 
@@ -28,8 +28,8 @@
 ## Step 1. 저장소 클론 & 의존성 설치
 
 ```bash
-git clone <repo-url> hmmbl-web
-cd hmmbl-web
+git clone <repo-url> hmfrnt-web
+cd hmfrnt-web
 ```
 
 폐쇄망 환경에서는 npm 레지스트리에 접근할 수 없으므로 `npm install` 대신 파일 서버(`10.109.198.29`, `Z:\00. 공지사항\001. 설치파일\개발툴\React`)에 미리 빌드된 `node_modules`를 복사해서 사용합니다.
@@ -61,7 +61,7 @@ mkcert 설치 파일은 파일 서버(`10.109.198.29`, `Z:\00. 공지사항\001.
 
 ```powershell
 # 프로젝트 루트에 keyfile/ 폴더를 만들고 인증서 발급
-cd hmmbl-web
+cd hmfrnt-web
 mkdir keyfile
 mkcert -install
 mkcert -key-file keyfile/local-key.pem -cert-file keyfile/local-cert.pem localhost 127.0.0.1
@@ -125,7 +125,6 @@ npm run dev:https   # HTTPS(선택 — Step 2 인증서 필요), https://localho
 | `/dev/ref/publisher` | 코드 레퍼런스 | `ExampleView.tsx` 작성 패턴 확인 (퍼블리셔가 만드는 파일이지만 Props 계약을 이해해두면 협업이 쉬움) |
 | `/dev/ui` | UI 컴포넌트 카탈로그 | 이미 존재하는 공통 컴포넌트 확인 (새로 만들기 전에 여기부터 확인) |
 | `/dev/auth` | 인증 디버그 | 로그인 상태·토큰·사용자 정보 확인, 토큰 refresh 테스트 |
-| `/dev/bridge` | Bridge 테스트 | 네이티브 앱 없이 GPS/카메라/인증 등 브릿지 이벤트 시뮬레이션 |
 | `/dev/pub` | 퍼블리셔 미리보기 | 목업 데이터로 렌더링된 View 목록 |
 
 > 자세한 내용: [21-dev-tools.md](./21-dev-tools.md), [24-dev-preview-guide.md](./24-dev-preview-guide.md), [23-ia-navigator.md](./23-ia-navigator.md)
@@ -140,10 +139,10 @@ npm run dev:https   # HTTPS(선택 — Step 2 인증서 필요), https://localho
 app/  (Next.js 라우트 · Provider)
   └─ features/  (도메인 로직 · Page · View)
        └─ components/common/ui/  (순수 UI 컴포넌트)
-            └─ lib/  (순수 인프라 · 유틸리티, React/Zustand/bridge 비의존)
+            └─ lib/  (순수 인프라 · 유틸리티, React/Zustand 비의존)
 ```
 
-`lib/`는 Zustand·bridge·React에 의존하지 않습니다.  
+`lib/`는 Zustand·React에 의존하지 않습니다.  
 외부 동작이 필요하면 **콜백 DI(Dependency Injection)** 로 주입받습니다(`configureApiClient({ getToken, onUnauthorized, ... })`가 대표 예시).  
 `lib/`에서 `useAuthStore`를 직접 import하는 코드는 리뷰에서 반려 대상입니다.
 
@@ -180,33 +179,21 @@ features/[domain]/
 
 ## Step 7. 인증 흐름 개요 (배경지식)
 
-브라우저에서 `(protected)` 그룹 화면(`/earn`, `/my`, `/pay` 등)에 접속했는데 데이터가 비어 보이거나 API가 401을 반환하는 경우가 있습니다.  
-버그가 아니라 의도된 동작이니 당황하지 마세요.
+`(protected)` 그룹 화면(`/earn`, `/my`, `/pay` 등)은 로그인이 필요합니다.
 
-### `window.bridge`란?
+### 로그인 부트스트랩
 
-네이티브 앱(iOS/Android)이 **자기 앱 안의 웹뷰에서 페이지를 열 때만** 주입해주는 객체입니다.  
-일반 데스크톱/모바일 브라우저로 같은 URL에 접속하면 이 객체는 아예 존재하지 않습니다(`undefined`).  
-그래서 코드는 `window.bridge`가 있는지 확인하는 것만으로 "지금 이 페이지가 네이티브 앱의 웹뷰 안에서 열려 있는가"를 판별합니다.
-
-### webview-code SSO란?
-
-`(protected)/layout.tsx`는 미인증 상태를 **로그인 화면으로 리다이렉트하지 않습니다.**  
-대신 `window.bridge`가 있을 때(=네이티브 웹뷰 환경)만 아래 흐름을 자동으로 실행해, 사용자가 로그인 버튼을 누르지 않아도 네이티브 앱의 로그인 상태를 웹뷰에 그대로 이어받습니다(Single Sign-On).
+`(protected)/layout.tsx`는 마운트 시 미인증 상태(`isAuthenticated === false`)면 httpOnly refresh 쿠키로 조용히 세션 복구를 시도합니다(`refreshFromCookie`, 새로고침 후에도 로그인을 유지하기 위함). 복구에 실패하면 `/auth/login?redirect=<원래 경로>`로 리다이렉트합니다.
 
 ```
-1. window.bridge.requestAuthCode() 호출
-     → 네이티브에 "이미 로그인된 세션이 있으면 1회용 코드를 달라"고 요청
-2. 네이티브가 appAuthCode 이벤트로 1회용 코드를 응답
-3. 그 코드로 POST /auth/token 호출 (initAuthFromCode)
-     → 웹뷰 자체의 액세스 토큰 발급 → 이후 apiClient 요청에 자동 첨부
+1. /auth/login에서 이메일/비밀번호 입력 → authApi.login()
+     → POST /auth/login + DPoP proof → 액세스 토큰 + 사용자 정보 수신
+2. setAuth(user, accessToken) → Zustand 상태 저장, 이후 apiClient 요청에 자동 첨부
+3. 새로고침 등으로 액세스 토큰(메모리)이 사라지면 (protected)/layout.tsx가
+   httpOnly refresh 쿠키로 POST /auth/refresh를 호출해 조용히 재발급받는다.
 ```
 
-- 일반 브라우저에는 `window.bridge`가 없으므로 이 시도 자체가 스킵되고, 실데이터를 요구하는 API는 401을 반환할 수 있습니다.
-- 개발 중에는 `/dev/auth`(Step 5)로 인증 상태를 확인하거나, `/dev/bridge`에서 `appAuthCode` 이벤트를 시뮬레이션하거나, `/dev/pub`의 목업 데이터로 UI만 먼저 확인하세요.
-
-로컬 개발 서버(`next dev`, `NODE_ENV=development`)에서는 WebView User-Agent 게이트(`proxy.ts`)가 열려 있어 일반 브라우저로도 페이지 자체는 접근됩니다.  
-이 게이트는 staging/prod 빌드에서만 활성화됩니다.
+개발 중에는 `/dev/auth`(Step 5)로 인증 상태를 확인하거나, `/dev/pub`의 목업 데이터로 UI만 먼저 확인하세요.
 
 > 자세한 내용: [05-auth-system.md](./05-auth-system.md), [04-routing-architecture.md](./04-routing-architecture.md) 3장
 
@@ -399,7 +386,7 @@ export default function Page() {
 }
 ```
 
-`(protected)`/`(public)` 중 어느 그룹에 넣을지는 해당 화면이 webview SSO 부트스트랩(Step 7)이 필요한지로 판단합니다.
+`(protected)`/`(public)` 중 어느 그룹에 넣을지는 해당 화면이 로그인 부트스트랩(Step 7)이 필요한지로 판단합니다.
 
 ### 8-7. 확인
 
@@ -443,12 +430,11 @@ fix(auth): resolve token cache expiry edge case
 | 증상 | 원인 / 해결 |
 |---|---|
 | `ERR_CERT_AUTHORITY_INVALID` 계속 발생 | 로컬 인증서 미발급/만료 — Step 2 재수행 |
-| `(protected)` 화면이 빈 화면 또는 401 | 브라우저에는 `window.bridge`가 없어 인증 부트스트랩이 스킵됨 — Step 7 참고, `/dev/auth`·`/dev/pub` 활용 |
+| `(protected)` 화면이 빈 화면 또는 401 | 로그인되어 있지 않음 — `/auth/login`으로 로그인하거나 Step 7 참고, `/dev/auth`·`/dev/pub` 활용 |
 | `next.config.mjs`/`.env.local`/`tailwind.config.ts` 수정했는데 반영 안 됨 | 개발 서버 재시작 필요 |
-| 로컬에서 `npm run build && npm start`로 확인했는데 전부 `/blocked`로 이동 | prod 빌드는 `NODE_ENV=production`이라 WebView UA 게이트가 켜짐 — 정상 동작. 게이트 로직 자체를 확인하려면 UA에 `HPointApp` 마커를 포함한 요청으로 테스트 |
 | 스타일이 적용되지 않음 | 브라우저 캐시 강력 새로고침(`Cmd+Shift+R`) 후에도 안 되면 서버 재시작 |
 
-> 자세한 내용: [24-dev-preview-guide.md](./24-dev-preview-guide.md) 6장, [31-security-infrastructure.md](./31-security-infrastructure.md) 3장
+> 자세한 내용: [24-dev-preview-guide.md](./24-dev-preview-guide.md) 6장, [30-security-infrastructure.md](./30-security-infrastructure.md) 3장
 
 ---
 
@@ -463,9 +449,8 @@ fix(auth): resolve token cache expiry edge case
 | [03-project-overview.md](./03-project-overview.md) | 디렉토리 구조, 레이어 아키텍처 |
 | [04-routing-architecture.md](./04-routing-architecture.md) | App Router 구조, 라우트 보호 개요 |
 | [05-auth-system.md](./05-auth-system.md) | 인증 흐름 개요, Zustand AuthStore, 로그아웃 사용법 |
-| [08-bridge-guide.md](./08-bridge-guide.md) | Native Bridge 전체 API |
 | [06-api-client.md](./06-api-client.md) | apiClient, React Query, 에러 처리, 파일 업로드 |
-| [09-i18n-guide.md](./09-i18n-guide.md) | 다국어 처리 (쿠키 + Bridge 기반) |
+| [09-i18n-guide.md](./09-i18n-guide.md) | 다국어 처리 (쿠키 기반) |
 | [07-state-management.md](./07-state-management.md) | Zustand 전역 store |
 | [20-features-module-guide.md](./20-features-module-guide.md) | features 구조, shared 컴포넌트/훅 전체 목록 |
 | [21-dev-tools.md](./21-dev-tools.md) | `/dev` 도구 상세 |
@@ -474,9 +459,8 @@ fix(auth): resolve token cache expiry edge case
 
 | 문서 | 내용 |
 |---|---|
-| [30-dpop-mode-switch-proposal.md](./30-dpop-mode-switch-proposal.md) | DPoP native 위임 모드 설계 배경 |
-| [31-security-infrastructure.md](./31-security-infrastructure.md) | `proxy.ts` CSP·보안 헤더·nonce·SSO 부트스트랩·WebView 게이트 구현 상세 |
-| [32-auth-dpop-internals.md](./32-auth-dpop-internals.md) | DPoP 키·토큰 캐시·갱신·apiClient DI 연결·로그아웃 내부 구현, webview/native 모드 전환 |
+| [30-security-infrastructure.md](./30-security-infrastructure.md) | `proxy.ts` CSP·보안 헤더·nonce·인증 부트스트랩 구현 상세 |
+| [31-auth-dpop-internals.md](./31-auth-dpop-internals.md) | DPoP 키·토큰 캐시·갱신·apiClient DI 연결·로그아웃 내부 구현 |
 
 **퍼블리싱 / UI**
 

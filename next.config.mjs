@@ -7,7 +7,7 @@ const allowedDevOrigins = (process.env.ALLOWED_DEV_ORIGINS ?? '')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // next-intl 플러그인 없음 (WebView 전용 — 다국어 불필요)
+  // next-intl 플러그인 없음 (URL 기반 라우팅 미사용 — 쿠키 기반으로 로케일 결정)
   allowedDevOrigins: allowedDevOrigins.length ? allowedDevOrigins : ['localhost', '127.0.0.1'],
   images: {
     remotePatterns: [

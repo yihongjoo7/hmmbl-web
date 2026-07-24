@@ -5,7 +5,7 @@ import { translateBatch } from '@/lib/i18n/translate';
 /**
  * GET /api/messages?locale=ja
  *
- * 웹뷰 클라이언트(LocaleProvider)가 동적 locale(ja·th·vi·ms)의
+ * 클라이언트(LocaleProvider)가 동적 locale(ja·th·vi·ms)의
  * 번역 메시지를 가져오기 위해 호출한다.
  *
  * 정적 locale(ko·en·zh): 해당 messages/*.json 파일 반환

@@ -21,7 +21,7 @@
 - 경로: `Z:\00. 공지사항\001. 설치파일\개발툴\React` (mkcert 설치 파일과 동일한 위치, `node_modules.zip` 또는 `node_modules` 폴더 형태로 제공됨)
 
 ```powershell
-cd hmmbl-web
+cd hmfrnt-web
 
 # Z 드라이브가 매핑되어 있는 경우
 xcopy /E /I "Z:\00. 공지사항\001. 설치파일\개발툴\React\node_modules" node_modules
@@ -89,7 +89,7 @@ setx PATH "%PATH%;C:\tools\mkcert" /M
 **3) 로컬 CA 등록 및 인증서 발급 (인터넷 연결 불필요 — 로컬 암호화 작업만 수행)**
 
 ```powershell
-cd hmmbl-web                # 프로젝트 루트로 이동
+cd hmfrnt-web                # 프로젝트 루트로 이동
 mkdir keyfile
 
 mkcert -install
@@ -146,7 +146,7 @@ const nextConfig = {
 };
 ```
 
-> ⚠️ `next-intl` 플러그인은 연결되어 있지 않습니다(주석: "WebView 전용 — 다국어 불필요").  
+> ⚠️ `next-intl` 플러그인은 연결되어 있지 않습니다(URL 기반 라우팅을 사용하지 않고 쿠키로 로케일을 결정하기 때문).  
 > `next-intl`은 `package.json` 의존성에는 있지만 `next.config.mjs`에서 플러그인으로 wrap하지 않습니다.  
 > i18n 상세는 `09-i18n-guide.md` 참고.
 
@@ -179,7 +179,7 @@ const nextConfig = {
 ```
 
 - `type`: 변경 종류 (아래 표 참고)
-- `scope`: 변경 영역 (선택, 예: `auth`, `bridge`, `earn`)
+- `scope`: 변경 영역 (선택, 예: `auth`, `earn`, `dpop`)
 - `subject`: 변경 내용 요약 (최대 100자, 소문자 시작 허용)
 
 ### 허용 타입
@@ -200,7 +200,7 @@ const nextConfig = {
 ### 예시
 
 ```bash
-feat(bridge): add requestStepCount action
+feat(auth): add email/password login page
 fix(auth): resolve token cache expiry edge case
 docs(api): add applyFieldErrors usage example
 chore: upgrade zustand to 5.0.3
